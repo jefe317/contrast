@@ -1,14 +1,28 @@
 <?php
 function parseColor($color) {
+    // Strip any CSS syntax or semicolons
+    $color = preg_replace('/.*:\s*/', '', $color); // Remove anything before and including ':'
+    $color = preg_replace('/;.*/', '', $color);    // Remove semicolon and anything after
+    $color = preg_replace('/}.*/', '', $color);    // Remove closing brace and anything after
     $color = trim($color);
     
     // Convert all colors to RGB array format [r, g, b]
-    if (preg_match('/^#([A-Fa-f0-9]{3}){1,2}$/', $color)) {
-        // Hex color
+    if (preg_match('/^#([A-Fa-f0-9]{3,8})$/', $color, $matches)) {
+        // Hex color (including alpha)
         $hex = ltrim($color, '#');
-        if (strlen($hex) == 3) {
+        $length = strlen($hex);
+        
+        if ($length == 3) {
+            // #RGB format
             $hex = $hex[0].$hex[0].$hex[1].$hex[1].$hex[2].$hex[2];
+        } elseif ($length == 4) {
+            // #RGBA format
+            $hex = $hex[0].$hex[0].$hex[1].$hex[1].$hex[2].$hex[2]; // Ignore alpha channel
+        } elseif ($length == 8) {
+            // #RRGGBBAA format
+            $hex = substr($hex, 0, 6); // Ignore alpha channel
         }
+        
         return [
             hexdec(substr($hex, 0, 2)),
             hexdec(substr($hex, 2, 2)),
@@ -36,6 +50,25 @@ function parseColor($color) {
         return hslToRgb($matches[1], $matches[2], $matches[3]);
     }
     return false;
+}
+
+function preprocessColorInput($input) {
+    // Split on either newlines or closing braces
+    $lines = preg_split('/[\n}]/', $input);
+    
+    // Process each line
+    $colors = [];
+    foreach ($lines as $line) {
+        // Skip empty lines
+        if (trim($line) === '') continue;
+        
+        // Extract anything that looks like a color value
+        if (preg_match('/(#[A-Fa-f0-9]{3,8}|(?:rgb|rgba|hsl|hsla)\([^)]+\))/', $line, $matches)) {
+            $colors[] = $matches[0];
+        }
+    }
+    
+    return $colors;
 }
 
 function hslToRgb($h, $s, $l) {
@@ -96,7 +129,7 @@ $results = [];
 $summary = [];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['colors'])) {
-    $colors = array_filter(array_map('trim', explode("\n", $_POST['colors'])));
+    $colors = preprocessColorInput($_POST['colors']);
     $colors = array_slice($colors, 0, 20); // Limit to 20 colors
     
     $parsed_colors = [];
@@ -162,11 +195,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['colors'])) {
     <form method="post">
         <p>Enter up to 20 colors (one per line) in any of these formats:</p>
         <ul>
-            <li>Hex: #FFF or #FFFFFF</li>
+            <li>Hex: #FFF, #FFFFFF, #FFFF (with alpha), #FFFFFFFF (with alpha)</li>
             <li>RGB: rgb(255, 255, 255)</li>
             <li>RGBA: rgba(255, 255, 255, 0.5)</li>
             <li>HSL: hsl(360, 100%, 100%)</li>
             <li>HSLA: hsla(360, 100%, 100%, 0.5)</li>
+            <li>CSS syntax is also accepted (e.g., "color: #FFF;" or "background-color: rgb(255, 0, 0);")</li>
         </ul>
         <textarea name="colors" required><?= isset($_POST['colors']) ? htmlspecialchars($_POST['colors']) : '' ?></textarea>
         <br><br>
