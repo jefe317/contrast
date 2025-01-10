@@ -1,157 +1,154 @@
 <?php
+ini_set('display_errors', 1);
+function hslToRgb($hsl)
+{
+    // Parse H, S, L values
+    $hsl = array_map('trim', explode(',', $hsl));
+    $h = (float) rtrim($hsl[0], '%') / 360; // Normalize to 0-1
+    $s = (float) rtrim($hsl[1], '%') / 100; // Normalize to 0-1
+    $l = (float) rtrim($hsl[2], '%') / 100; // Normalize to 0-1
 
-// functions
-function getContrastRatio($color1, $color2) {
-    $rgb1 = parseColor($color1);
-    $rgb2 = parseColor($color2);
-    
-    if (!$rgb1 || !$rgb2) {
-        return false;
-    }
-    
-    $l1 = getLuminance($rgb1);
-    $l2 = getLuminance($rgb2);
-    
-    $lighter = max($l1, $l2);
-    $darker = min($l1, $l2);
-    
-    return ($lighter + 0.05) / ($darker + 0.05);
-}
+    $convert = function ($p, $q, $t) {
+        if ($t < 0) $t += 1;
+        if ($t > 1) $t -= 1;
+        if ($t < 1 / 6) return $p + ($q - $p) * 6 * $t;
+        if ($t < 1 / 2) return $q;
+        if ($t < 2 / 3) return $p + ($q - $p) * (2 / 3 - $t) * 6;
+        return $p;
+    };
 
-function parseColor($color) {
-    $color = strtolower(trim($color));
-    
-    // Handle hex
-    if (preg_match('/^#?([a-f\d]{3}|[a-f\d]{6})$/', $color)) {
-        $color = ltrim($color, '#');
-        if (strlen($color) == 3) {
-            $color = $color[0].$color[0].$color[1].$color[1].$color[2].$color[2];
-        }
-        return [
-            hexdec(substr($color, 0, 2)),
-            hexdec(substr($color, 2, 2)),
-            hexdec(substr($color, 4, 2))
-        ];
-    }
-    
-    // Handle rgb/rgba
-    if (preg_match('/^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*[\d.]+)?\)$/', $color, $matches)) {
-        return [
-            (int)$matches[1],
-            (int)$matches[2],
-            (int)$matches[3]
-        ];
-    }
-    
-    // Handle hsl/hsla
-    if (preg_match('/^hsla?\((\d+),\s*(\d+)%,\s*(\d+)%(?:,\s*[\d.]+)?\)$/', $color, $matches)) {
-        return hslToRgb(
-            (int)$matches[1],
-            (int)$matches[2],
-            (int)$matches[3]
-        );
-    }
-    
-    return false;
-}
-
-function hslToRgb($h, $s, $l) {
-    $h /= 360;
-    $s /= 100;
-    $l /= 100;
-    
-    if ($s == 0) {
-        $r = $g = $b = $l;
+    if ($s === 0) {
+        $r = $g = $b = $l; // Achromatic
     } else {
         $q = $l < 0.5 ? $l * (1 + $s) : $l + $s - $l * $s;
         $p = 2 * $l - $q;
-        
-        $r = hueToRgb($p, $q, $h + 1/3);
-        $g = hueToRgb($p, $q, $h);
-        $b = hueToRgb($p, $q, $h - 1/3);
+        $r = $convert($p, $q, $h + 1 / 3);
+        $g = $convert($p, $q, $h);
+        $b = $convert($p, $q, $h - 1 / 3);
     }
-    
+
+    return [round($r * 255), round($g * 255), round($b * 255)];
+}
+
+function hexToRgb($hex)
+{
+    $hex = ltrim($hex, '#');
+    if (strlen($hex) === 3) {
+        $hex = $hex[0] . $hex[0] . $hex[1] . $hex[1] . $hex[2] . $hex[2];
+    }
     return [
-        round($r * 255),
-        round($g * 255),
-        round($b * 255)
+        hexdec(substr($hex, 0, 2)),
+        hexdec(substr($hex, 2, 2)),
+        hexdec(substr($hex, 4, 2)),
     ];
 }
 
-function hueToRgb($p, $q, $t) {
-    if ($t < 0) $t += 1;
-    if ($t > 1) $t -= 1;
-    if ($t < 1/6) return $p + ($q - $p) * 6 * $t;
-    if ($t < 1/2) return $q;
-    if ($t < 2/3) return $p + ($q - $p) * (2/3 - $t) * 6;
-    return $p;
+function contrastRatio($rgb1, $rgb2)
+{
+    $luminance = function ($rgb) {
+        foreach ($rgb as &$value) {
+            $value /= 255;
+            $value = $value <= 0.03928 ? $value / 12.92 : pow(($value + 0.055) / 1.055, 2.4);
+        }
+        return 0.2126 * $rgb[0] + 0.7152 * $rgb[1] + 0.0722 * $rgb[2];
+    };
+
+    $lum1 = $luminance($rgb1);
+    $lum2 = $luminance($rgb2);
+
+    return ($lum1 > $lum2 ? ($lum1 + 0.05) / ($lum2 + 0.05) : ($lum2 + 0.05) / ($lum1 + 0.05));
 }
 
-function getLuminance($rgb) {
-    list($r, $g, $b) = array_map(function($val) {
-        $val = $val / 255;
-        return $val <= 0.03928 
-            ? $val / 12.92 
-            : pow(($val + 0.055) / 1.055, 2.4);
-    }, $rgb);
-    
-    return 0.2126 * $r + 0.7152 * $g + 0.0722 * $b;
+function parseColor($color)
+{
+    if (preg_match('/^#/', $color)) {
+        return hexToRgb($color);
+    } elseif (preg_match('/^rgba?\((.+?)\)$/i', $color, $matches)) {
+        return array_map('intval', explode(',', $matches[1]));
+    } elseif (preg_match('/^hsla?\((.+?)\)$/i', $color, $matches)) {
+        return hslToRgb(explode(',', $matches[1]));
+    }
+    return null;
 }
 
-// get color input through the form
-$input = $_GET['colors'] ?? '';
-$colors = $input ? array_filter(explode("\n", $input)) : [];
-$colors = array_slice($colors, 0, 20);
+function generateSummaryTable($colors)
+{
+    $summary = "<table border='1'><tr><th>Background</th><th>Foregrounds (Pass)</th></tr>";
+    foreach ($colors as $bg => $bgRgb) {
+        $passing = [];
+        foreach ($colors as $fg => $fgRgb) {
+            if ($bg === $fg) continue;
+            $contrast = contrastRatio($bgRgb, $fgRgb);
+            if ($contrast >= 4.5) {
+                $passing[$fg] = $contrast;
+            }
+        }
+        arsort($passing);
+        $summary .= "<tr><td style='background-color: $bg; color: black;'>$bg</td><td>" . implode(', ', array_keys($passing)) . "</td></tr>";
+    }
+    $summary .= "</table>";
+    return $summary;
+}
 
-function validateColor($color) {
-    $color = trim($color);
-    return preg_match('/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3}|[A-Fa-f0-9]{8}|[A-Fa-f0-9]{4})$/', $color) || // hex with optional alpha
-           preg_match('/^rgb\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*\)$/', $color) || // rgb
-           preg_match('/^rgba\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*,\s*[\d.]+\s*\)$/', $color) || // rgba
-           preg_match('/^hsl\(\s*\d+\s*,\s*\d+%?\s*,\s*\d+%?\s*\)$/', $color) || // hsl
-           preg_match('/^hsla\(\s*\d+\s*,\s*\d+%?\s*,\s*\d+%?\s*,\s*[\d.]+\s*\)$/', $color); // hsla
+function generateContrastGrid($colors)
+{
+    $grid = "<table border='1'>";
+    $grid .= "<tr><th>\</th>";
+    foreach ($colors as $fg => $_) {
+        $grid .= "<th>$fg</th>";
+    }
+    $grid .= "</tr>";
+
+    foreach ($colors as $bg => $bgRgb) {
+        $grid .= "<tr><td>$bg</td>";
+        foreach ($colors as $fg => $fgRgb) {
+            $contrast = contrastRatio($bgRgb, $fgRgb);
+            $wcag = $contrast >= 7 ? 'AAA' : ($contrast >= 4.5 ? 'AA' : ($contrast >= 3 ? 'UI' : 'Fail'));
+            $grid .= "<td style='background-color: $bg; color: $fg;' title='Contrast: $contrast (WCAG: $wcag)'>$wcag</td>";
+        }
+        $grid .= "</tr>";
+    }
+
+    $grid .= "</table>";
+    return $grid;
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $inputColors = preg_split("/\r\n|\r|\n/", trim($_POST['colors']));
+    $parsedColors = [];
+
+    foreach ($inputColors as $color) {
+        $parsed = parseColor($color);
+        if ($parsed) {
+            $parsedColors[$color] = $parsed;
+        }
+    }
+
+    $summaryTable = generateSummaryTable($parsedColors);
+    $contrastGrid = generateContrastGrid($parsedColors);
 }
 ?>
+
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-	<title>Color Display</title>
-	<style>
-		.color-container {
-			display: flex;
-			flex-wrap: wrap;
-			gap: 10px;
-			margin: 20px 0;
-            background: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAMUlEQVQ4T2NkYGAQYcAP3uCTZhw1gGGYhAGBZIA/nYDCgBDAm9BGDWAAJyRCgLaBCAAgXwixzAS0pgAAAABJRU5ErkJggg==") repeat;
-		}
-		.color-box {
-			width: 100px;
-			height: 100px;
-		}
-		textarea {
-			width: 100%;
-			max-width: 400px;
-			height: 200px;
-		}
-	</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WCAG Contrast Checker</title>
 </head>
 <body>
-    <form method="GET">
-        <textarea name="colors" placeholder="Enter up to 20 colors (one per line)&#10;Example:&#10;#ff0000&#10;rgba(0, 255, 0, 0.5)&#10;#0080FF80&#10;hsl(240, 100%, 50%)"><?= htmlspecialchars($input) ?></textarea>
-        <br>
-        <button type="submit">Show Colors</button>
+    <h1>WCAG Contrast Checker</h1>
+    <form method="post">
+        <textarea name="colors" rows="10" cols="30" placeholder="Enter up to 20 colors (one per line)"></textarea><br>
+        <button type="submit">Calculate Contrast</button>
     </form>
 
-    <?php if (!empty($colors)): ?>
-        <div class="color-container">
-            <?php foreach($colors as $color): ?>
-                <?php if (validateColor(trim($color))): ?>
-                    <div class="color-box" style="background-color: <?= htmlspecialchars(trim($color)) ?>"></div>
-                <?php endif; ?>
-            <?php endforeach; ?>
-        </div>
-        
-        <p><a href="?colors=<?= urlencode($input) ?>">Share these colors</a></p>
+    <?php if (!empty($summaryTable) && !empty($contrastGrid)): ?>
+        <h2>Summary Table</h2>
+        <?= $summaryTable ?>
+
+        <h2>Contrast Grid</h2>
+        <?= $contrastGrid ?>
     <?php endif; ?>
 </body>
 </html>
