@@ -1,4 +1,7 @@
 <?php
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
 function parseColor($color) {
     // Strip any CSS syntax or semicolons
     $color = preg_replace('/.*:\s*/', '', $color); // Remove anything before and including ':'
@@ -29,46 +32,23 @@ function parseColor($color) {
             hexdec(substr($hex, 4, 2))
         ];
     } elseif (preg_match('/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/', $color, $matches)) {
-        // RGB color
         return [
             intval($matches[1]),
             intval($matches[2]),
             intval($matches[3])
         ];
     } elseif (preg_match('/^rgba\((\d+),\s*(\d+),\s*(\d+),\s*([\d.]+)\)$/', $color, $matches)) {
-        // RGBA color (ignoring alpha for contrast calculations)
         return [
             intval($matches[1]),
             intval($matches[2]),
             intval($matches[3])
         ];
     } elseif (preg_match('/^hsl\((\d+),\s*(\d+)%,\s*(\d+)%\)$/', $color, $matches)) {
-        // HSL color
         return hslToRgb($matches[1], $matches[2], $matches[3]);
     } elseif (preg_match('/^hsla\((\d+),\s*(\d+)%,\s*(\d+)%,\s*([\d.]+)\)$/', $color, $matches)) {
-        // HSLA color (ignoring alpha)
         return hslToRgb($matches[1], $matches[2], $matches[3]);
     }
     return false;
-}
-
-function preprocessColorInput($input) {
-    // Split on either newlines or closing braces
-    $lines = preg_split('/[\n}]/', $input);
-    
-    // Process each line
-    $colors = [];
-    foreach ($lines as $line) {
-        // Skip empty lines
-        if (trim($line) === '') continue;
-        
-        // Extract anything that looks like a color value
-        if (preg_match('/(#[A-Fa-f0-9]{3,8}|(?:rgb|rgba|hsl|hsla)\([^)]+\))/', $line, $matches)) {
-            $colors[] = $matches[0];
-        }
-    }
-    
-    return $colors;
 }
 
 function hslToRgb($h, $s, $l) {
@@ -125,55 +105,25 @@ function getWCAGLevel($ratio) {
     return 'Fail';
 }
 
-$results = [];
+// Process form submission
+$parsed_colors = [];
 $summary = [];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['colors'])) {
-    $colors = preprocessColorInput($_POST['colors']);
+    $colors = array_filter(array_map('trim', explode("\n", $_POST['colors'])));
     $colors = array_slice($colors, 0, 20); // Limit to 20 colors
     
-    $parsed_colors = [];
     foreach ($colors as $color) {
         $rgb = parseColor($color);
-        if ($rgb) {
+        if ($rgb !== false) {
             $parsed_colors[$color] = [
                 'rgb' => $rgb,
                 'luminance' => getLuminance($rgb)
             ];
         }
     }
-    
-    // Calculate all combinations
-    foreach ($parsed_colors as $bg_color => $bg) {
-        $summary[$bg_color] = [];
-        foreach ($parsed_colors as $fg_color => $fg) {
-            $contrast = getContrastRatio($bg['luminance'], $fg['luminance']);
-            $wcag_level = getWCAGLevel($contrast);
-            
-            $results[] = [
-                'bg' => $bg_color,
-                'fg' => $fg_color,
-                'contrast' => $contrast,
-                'wcag' => $wcag_level
-            ];
-            
-            if ($wcag_level !== 'Fail') {
-                $summary[$bg_color][] = [
-                    'fg' => $fg_color,
-                    'contrast' => $contrast,
-                    'wcag' => $wcag_level
-                ];
-            }
-        }
-        
-        // Sort by contrast ratio descending
-        usort($summary[$bg_color], function($a, $b) {
-            return $b['contrast'] <=> $a['contrast'];
-        });
-    }
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -182,11 +132,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['colors'])) {
     <title>WCAG Color Contrast Analyzer</title>
     <style>
         body { font-family: Arial, sans-serif; margin: 20px; }
-        table { border-collapse: collapse; margin: 20px 0; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
-        .sample-text { padding: 5px; }
-        .contrast-info { font-size: 0.8em; }
+        table { border-collapse: collapse; margin: 20px 0; width: 100%; }
+        th, td { border: 1px solid #000; padding: 8px; text-align: left; vertical-align: top; }
         textarea { width: 100%; max-width: 400px; height: 200px; }
+        .checkered {background: conic-gradient(#f3f3f3 90deg, #ffffff 90deg 180deg, #f3f3f3 180deg 270deg, #ffffff 270deg); background-repeat: repeat; background-size: 40px 40px; }
     </style>
 </head>
 <body>
@@ -207,27 +156,75 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['colors'])) {
         <button type="submit">Calculate Contrast</button>
     </form>
 
-    <?php if (!empty($summary)): ?>
-        <h2>Summary of Passing Combinations</h2>
-        <?php foreach ($summary as $bg_color => $combinations): ?>
-            <h3>Background: <?= htmlspecialchars($bg_color) ?></h3>
-            <?php if (empty($combinations)): ?>
-                <p>No passing combinations found.</p>
-            <?php else: ?>
-                <ul>
-                <?php foreach ($combinations as $combo): ?>
-                    <li style="background-color: <?= $bg_color ?>; color: <?= $combo['fg'] ?>; padding: 5px; margin: 5px 0;">
-                        Foreground: <?= htmlspecialchars($combo['fg']) ?> 
-                        (Contrast: <?= number_format($combo['contrast'], 2) ?>, 
-                        WCAG Level: <?= $combo['wcag'] ?>)
-                    </li>
+    <?php if (!empty($parsed_colors)): ?>
+        <h2>Summary of Compatible Color Combinations</h2>
+        <table class="checkered">
+            <thead>
+                <tr>
+                    <th>Background</th>
+                    <th>AAA ≥ 7.0</th>
+                    <th>AA Normal ≥ 4.5</th>
+                    <th>AA Large ≥ 3.0</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($parsed_colors as $bg_color => $bg): 
+                    // Calculate all combinations for this background color
+                    $combinations = [];
+                    foreach ($parsed_colors as $fg_color => $fg) {
+                        if ($fg_color === $bg_color) continue;
+                        $contrast = getContrastRatio($bg['luminance'], $fg['luminance']);
+                        $wcag_level = getWCAGLevel($contrast);
+                        if ($wcag_level !== 'Fail') {
+                            $combinations[] = [
+                                'color' => $fg_color,
+                                'contrast' => $contrast,
+                                'level' => $wcag_level
+                            ];
+                        }
+                    }
+
+                    // Group by WCAG level
+                    $wcag_groups = [
+                        'AAA' => [],
+                        'AA' => [],
+                        'AA Large' => []
+                    ];
+                    
+                    foreach ($combinations as $combo) {
+                        $wcag_groups[$combo['level']][] = $combo;
+                    }
+                    
+                    // Sort each group by contrast ratio
+                    foreach ($wcag_groups as &$group) {
+                        usort($group, function($a, $b) {
+                            return $b['contrast'] <=> $a['contrast'];
+                        });
+                    }
+                ?>
+                <tr>
+                    <td style="background-color: <?= $bg_color ?>; padding: 1em;">
+                        <span style="color: <?= getLuminance($bg['rgb']) > 0.5 ? '#000000' : '#FFFFFF' ?>">
+                            <?= htmlspecialchars($bg_color) ?><br>
+                        </span>
+                    </td>
+                    <?php foreach (['AAA', 'AA', 'AA Large'] as $level): ?>
+                        <td style="background-color: <?= $bg_color ?>;">
+                            <?php foreach ($wcag_groups[$level] as $combo): ?>
+                                <div style="color: <?= htmlspecialchars($combo['color']) ?>; padding: 0.5em;">
+                                    <?= htmlspecialchars($combo['color']) ?> 
+                                    (Ratio: <?= number_format($combo['contrast'], 3) ?>)
+                                </div>
+                            <?php endforeach; ?>
+                        </td>
+                    <?php endforeach; ?>
+                </tr>
                 <?php endforeach; ?>
-                </ul>
-            <?php endif; ?>
-        <?php endforeach; ?>
+            </tbody>
+        </table>
 
         <h2>Complete Contrast Grid</h2>
-        <table>
+        <table class="checkered">
             <tr>
                 <th>BG \ FG</th>
                 <?php foreach ($parsed_colors as $color => $data): ?>
@@ -237,15 +234,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['colors'])) {
             <?php foreach ($parsed_colors as $bg_color => $bg_data): ?>
                 <tr>
                     <th><?= htmlspecialchars($bg_color) ?></th>
-                    <?php foreach ($parsed_colors as $fg_color => $fg_data): ?>
-                        <?php 
+                    <?php foreach ($parsed_colors as $fg_color => $fg_data): 
                         $contrast = getContrastRatio($bg_data['luminance'], $fg_data['luminance']);
                         $wcag_level = getWCAGLevel($contrast);
-                        ?>
+                    ?>
                         <td style="background-color: <?= $bg_color ?>;">
                             <div class="sample-text" style="color: <?= $fg_color ?>;">
                                 Sample Text
-                                <div class="contrast-info">
+                                <div style="font-size: 0.8em;">
                                     <?= number_format($contrast, 2) ?><br>
                                     <?= $wcag_level ?>
                                 </div>
