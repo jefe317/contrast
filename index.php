@@ -50,147 +50,11 @@ if (session_status() === PHP_SESSION_NONE) {
 	session_start();
 }
 
-function blendColors($fg, $bg, $alpha) {
-	// Alpha blend colors using the formula: result = fg * alpha + bg * (1 - alpha)
-	return [
-		($fg[0] * $alpha) + ($bg[0] * (1 - $alpha)),
-		($fg[1] * $alpha) + ($bg[1] * (1 - $alpha)),
-		($fg[2] * $alpha) + ($bg[2] * (1 - $alpha))
-	];
-}
+// https://www.asciiart.eu/text-to-ascii-art Pagga
 
-function getLuminance($rgb, $alpha = 1, $bg = null) {
-	// If we have alpha and background, blend first
-	if ($alpha < 1 && $bg !== null) {
-		$rgb = blendColors($rgb, $bg, $alpha);
-	}
-	
-	// Convert to relative luminance
-	$rgb = array_map(function($val) {
-		$val = $val / 255;
-		return $val <= 0.03928 ? $val / 12.92 : pow(($val + 0.055) / 1.055, 2.4);
-	}, $rgb);
-	
-	return $rgb[0] * 0.2126 + $rgb[1] * 0.7152 + $rgb[2] * 0.0722;
-}
-
-function parseColor($color) {
-	if (strlen($color) > 100) { // prevent long inputs that might mess up the code
-		return false;
-	}
-	
-	// Add CSS color name mapping
-	$cssColors = [
-		'aliceblue' => [240, 248, 255], 'antiquewhite' => [250, 235, 215], 'aqua' => [0, 255, 255], 'aquamarine' => [127, 255, 212], 'azure' => [240, 255, 255], 'beige' => [245, 245, 220], 'bisque' => [255, 228, 196], 'black' => [0, 0, 0], 'blanchedalmond' => [255, 235, 205], 'blue' => [0, 0, 255], 'blueviolet' => [138, 43, 226], 'brown' => [165, 42, 42], 'burlywood' => [222, 184, 135], 'cadetblue' => [95, 158, 160], 'chartreuse' => [127, 255, 0], 'chocolate' => [210, 105, 30], 'coral' => [255, 127, 80], 'cornflowerblue' => [100, 149, 237], 'cornsilk' => [255, 248, 220], 'crimson' => [220, 20, 60], 'cyan' => [0, 255, 255], 'darkblue' => [0, 0, 139], 'darkcyan' => [0, 139, 139], 'darkgoldenrod' => [184, 134, 11], 'darkgray' => [169, 169, 169], 'darkgreen' => [0, 100, 0], 'darkgrey' => [169, 169, 169], 'darkkhaki' => [189, 183, 107], 'darkmagenta' => [139, 0, 139], 'darkolivegreen' => [85, 107, 47], 'darkorange' => [255, 140, 0], 'darkorchid' => [153, 50, 204], 'darkred' => [139, 0, 0], 'darksalmon' => [233, 150, 122], 'darkseagreen' => [143, 188, 143], 'darkslateblue' => [72, 61, 139], 'darkslategray' => [47, 79, 79], 'darkslategrey' => [47, 79, 79], 'darkturquoise' => [0, 206, 209], 'darkviolet' => [148, 0, 211], 'deeppink' => [255, 20, 147], 'deepskyblue' => [0, 191, 255], 'dimgray' => [105, 105, 105], 'dimgrey' => [105, 105, 105], 'dodgerblue' => [30, 144, 255], 'firebrick' => [178, 34, 34], 'floralwhite' => [255, 250, 240], 'forestgreen' => [34, 139, 34], 'fuchsia' => [255, 0, 255], 'gainsboro' => [220, 220, 220], 'ghostwhite' => [248, 248, 255], 'gold' => [255, 215, 0], 'goldenrod' => [218, 165, 32], 'gray' => [128, 128, 128], 'grey' => [128, 128, 128], 'green' => [0, 128, 0], 'greenyellow' => [173, 255, 47], 'honeydew' => [240, 255, 240], 'hotpink' => [255, 105, 180], 'indianred' => [205, 92, 92], 'indigo' => [75, 0, 130], 'ivory' => [255, 255, 240], 'khaki' => [240, 230, 140], 'lavender' => [230, 230, 250], 'lavenderblush' => [255, 240, 245], 'lawngreen' => [124, 252, 0], 'lemonchiffon' => [255, 250, 205], 'lightblue' => [173, 216, 230], 'lightcoral' => [240, 128, 128], 'lightcyan' => [224, 255, 255], 'lightgoldenrodyellow' => [250, 250, 210], 'lightgray' => [211, 211, 211], 'lightgreen' => [144, 238, 144], 'lightgrey' => [211, 211, 211], 'lightpink' => [255, 182, 193], 'lightsalmon' => [255, 160, 122], 'lightseagreen' => [32, 178, 170], 'lightskyblue' => [135, 206, 250], 'lightslategray' => [119, 136, 153], 'lightslategrey' => [119, 136, 153], 'lightsteelblue' => [176, 196, 222], 'lightyellow' => [255, 255, 224], 'lime' => [0, 255, 0], 'limegreen' => [50, 205, 50], 'linen' => [250, 240, 230], 'magenta' => [255, 0, 255], 'maroon' => [128, 0, 0], 'mediumaquamarine' => [102, 205, 170], 'mediumblue' => [0, 0, 205], 'mediumorchid' => [186, 85, 211], 'mediumpurple' => [147, 112, 219], 'mediumseagreen' => [60, 179, 113], 'mediumslateblue' => [123, 104, 238], 'mediumspringgreen' => [0, 250, 154], 'mediumturquoise' => [72, 209, 204], 'mediumvioletred' => [199, 21, 133], 'midnightblue' => [25, 25, 112], 'mintcream' => [245, 255, 250], 'mistyrose' => [255, 228, 225], 'moccasin' => [255, 228, 181], 'navajowhite' => [255, 222, 173], 'navy' => [0, 0, 128], 'oldlace' => [253, 245, 230], 'olive' => [128, 128, 0], 'olivedrab' => [107, 142, 35], 'orange' => [255, 165, 0], 'orangered' => [255, 69, 0], 'orchid' => [218, 112, 214], 'palegoldenrod' => [238, 232, 170], 'palegreen' => [152, 251, 152], 'paleturquoise' => [175, 238, 238], 'palevioletred' => [219, 112, 147], 'papayawhip' => [255, 239, 213], 'peachpuff' => [255, 218, 185], 'peru' => [205, 133, 63], 'pink' => [255, 192, 203], 'plum' => [221, 160, 221], 'powderblue' => [176, 224, 230], 'purple' => [128, 0, 128], 'rebeccapurple' => [102, 51, 153], 'red' => [255, 0, 0], 'rosybrown' => [188, 143, 143], 'royalblue' => [65, 105, 225], 'saddlebrown' => [139, 69, 19], 'salmon' => [250, 128, 114], 'sandybrown' => [244, 164, 96], 'seagreen' => [46, 139, 87], 'seashell' => [255, 245, 238], 'sienna' => [160, 82, 45], 'silver' => [192, 192, 192], 'skyblue' => [135, 206, 235], 'slateblue' => [106, 90, 205], 'slategray' => [112, 128, 144], 'slategrey' => [112, 128, 144], 'snow' => [255, 250, 250], 'springgreen' => [0, 255, 127], 'steelblue' => [70, 130, 180], 'tan' => [210, 180, 140], 'teal' => [0, 128, 128], 'thistle' => [216, 191, 216], 'tomato' => [255, 99, 71], 'turquoise' => [64, 224, 208], 'violet' => [238, 130, 238], 'wheat' => [245, 222, 179], 'white' => [255, 255, 255], 'whitesmoke' => [245, 245, 245], 'yellow' => [255, 255, 0], 'yellowgreen' => [154, 205, 50]
-	];
-
-	// Extract everything after the last colon, handling both CSS properties and variables
-	if (preg_match('/^.*:\s*(.+)$/', $color, $matches)) {
-		$color = $matches[1];
-	}
-	
-	// Strip any remaining CSS syntax or semicolons
-	$color = preg_replace('/;.*/', '', $color);    // Remove semicolon and anything after
-	$color = preg_replace('/}.*/', '', $color);    // Remove closing brace and anything after
-	$color = strtolower(trim($color));             // Normalize to lowercase
-	
-	// Check if it's a named CSS color
-	if (isset($cssColors[$color])) {
-		return array_merge($cssColors[$color], [1]); // Add alpha = 1 for named colors
-	}
-
-	// Validate hex format length before processing
-    if (preg_match('/^#[A-Fa-f0-9]+$/', $color) && strlen($color) != 4 && strlen($color) != 5 && strlen($color) != 7 && strlen($color) != 9) {
-        return false;
-    }
-
-    // Process valid hex colors
-    if (preg_match('/^#([A-Fa-f0-9]{3,8})$/', $color, $matches)) {
-        $hex = ltrim($color, '#');
-        $length = strlen($hex);
-        
-        switch($length) {
-            case 3: // #RGB
-                $r = hexdec($hex[0].$hex[0]);
-                $g = hexdec($hex[1].$hex[1]);
-                $b = hexdec($hex[2].$hex[2]);
-                return [$r, $g, $b, 1];
-            case 4: // #RGBA
-                $r = hexdec($hex[0].$hex[0]);
-                $g = hexdec($hex[1].$hex[1]);
-                $b = hexdec($hex[2].$hex[2]);
-                $a = hexdec($hex[3].$hex[3]) / 255;
-                return [$r, $g, $b, $a];
-            case 6: // #RRGGBB
-                $r = hexdec(substr($hex, 0, 2));
-                $g = hexdec(substr($hex, 2, 2));
-                $b = hexdec(substr($hex, 4, 2));
-                return [$r, $g, $b, 1];
-            case 8: // #RRGGBBAA
-                $r = hexdec(substr($hex, 0, 2));
-                $g = hexdec(substr($hex, 2, 2));
-                $b = hexdec(substr($hex, 4, 2));
-                $a = hexdec(substr($hex, 6, 2)) / 255;
-                return [$r, $g, $b, $a];
-        }
-    }
-	
-	if (preg_match('/^cmyk\((\d+)%?,\s*(\d+)%?,\s*(\d+)%?,\s*(\d+)%?\)$/', $color, $matches)) {
-		return cmykToRgb(
-			floatval($matches[1]),
-			floatval($matches[2]),
-			floatval($matches[3]),
-			floatval($matches[4])
-		);
-	} elseif (preg_match('/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/', $color, $matches)) {
-		return [
-			intval($matches[1]),
-			intval($matches[2]),
-			intval($matches[3])
-		];
-	} elseif (preg_match('/^rgba?\(\s*(\d+)(?:\s+|\s*,\s*)(\d+)(?:\s+|\s*,\s*)(\d+)(?:\s*(?:\/|\s*,)\s*([\d.]+))?\s*\)$/', $color, $matches)) {
-		return [
-			intval($matches[1]),
-			intval($matches[2]),
-			intval($matches[3]),
-			isset($matches[4]) ? floatval($matches[4]) : 1
-		];
-	} elseif (preg_match('/^hsl\((\d+),\s*(\d+)%,\s*(\d+)%\)$/', $color, $matches)) {
-		return hslToRgb($matches[1], $matches[2], $matches[3]);
-	} elseif (preg_match('/^hsla?\(\s*(\d+)(?:\s+|\s*,\s*)(\d+)%(?:\s+|\s*,\s*)(\d+)%(?:\s*(?:\/|\s*,)\s*([\d.]+))?\s*\)$/', $color, $matches)) {
-		$rgb = hslToRgb($matches[1], $matches[2], $matches[3]);
-		return array_merge($rgb, [isset($matches[4]) ? floatval($matches[4]) : 1]);
-	} elseif (preg_match('/^lab\((\d+\.?\d*),\s*(-?\d+\.?\d*),\s*(-?\d+\.?\d*)\)$/', $color, $matches)) {
-		return labToRgb(
-			floatval($matches[1]),
-			floatval($matches[2]),
-			floatval($matches[3])
-		);
-	} elseif (preg_match('/^hsb\((\d+),\s*(\d+)%?,\s*(\d+)%?\)$/', $color, $matches)) {
-		return hsbToRgb(
-			floatval($matches[1]),
-			floatval($matches[2]),
-			floatval($matches[3])
-		);
-	} elseif (preg_match('/^hwb\(\s*(\d+)\s+(\d+)%\s+(\d+)%(?:\s*\/\s*([\d.]+))?\s*\)$/', $color, $matches)) {
-		$rgb = hwbToRgb(
-			floatval($matches[1]), 
-			floatval($matches[2]), 
-			floatval($matches[3])
-		);
-		return array_merge($rgb, [isset($matches[4]) ? floatval($matches[4]) : 1]);
-	}
-	return false;
-}
-
-function getCleanColorName($color) {
-	// Remove CSS property names (case insensitive)
-	$color = preg_replace('/^(color|background-color|border-color):\s*/i', '', $color);    
-	// Remove any trailing semicolons or braces
-	$color = preg_replace('/[;{}].*$/', '', $color);
-	// Trim any whitespace
-	return trim($color);
-}
+// ░█▀▀░█▀█░█░░░█▀█░█▀▄░░░█▀▀░█▀█░█▀█░█░█░█▀▀░█▀▄░█▀▀░▀█▀░█▀█░█▀█░█▀▀
+// ░█░░░█░█░█░░░█░█░█▀▄░░░█░░░█░█░█░█░▀▄▀░█▀▀░█▀▄░▀▀█░░█░░█░█░█░█░▀▀█
+// ░▀▀▀░▀▀▀░▀▀▀░▀▀▀░▀░▀░░░▀▀▀░▀▀▀░▀░▀░░▀░░▀▀▀░▀░▀░▀▀▀░▀▀▀░▀▀▀░▀░▀░▀▀▀
 
 function hslToRgb($h, $s, $l) {
 	$h /= 360;
@@ -213,6 +77,17 @@ function hslToRgb($h, $s, $l) {
 		round($g * 255),
 		round($b * 255)
 	];
+}
+
+function lchToRgb($l, $c, $h, $alpha = 1) {
+	// First convert LCH to Lab
+	// L stays the same
+	// Convert polar form (C,H) to rectangular form (a,b)
+	$a = $c * cos(deg2rad($h));
+	$b = $c * sin(deg2rad($h));
+	
+	// Then convert Lab to XYZ using the existing labToRgb function
+	return array_merge(labToRgb($l, $a, $b), [$alpha]);
 }
 
 function hwbToRgb($h, $w, $b) {
@@ -273,35 +148,6 @@ function hueToRgb($p, $q, $t) {
 	if ($t < 1/2) return $q;
 	if ($t < 2/3) return $p + ($q - $p) * (2/3 - $t) * 6;
 	return $p;
-}
-
-function getContrastRatio($l1, $l2) {
-	// https://www.w3.org/TR/2008/REC-WCAG20-20081211/#contrast-ratiodef
-	$lighter = max($l1, $l2);
-	$darker = min($l1, $l2);
-	return ($lighter + 0.05) / ($darker + 0.05);
-}
-
-function getWCAGLevel($ratio) {
-	if ($ratio >= 7) return 'AAA';
-	if ($ratio >= 4.5) return 'AA';
-	if ($ratio >= 3) return 'AA Large';
-	return 'Fail';
-}
-
-function getCssColor($color) {
-	$rgba = parseColor($color);
-	if ($rgba === false) {
-		return '#000000'; // fallback color
-	}
-	
-	// If alpha is 1 or not specified, use rgb() format
-	if (!isset($rgba[3]) || $rgba[3] >= 0.999) {
-		return sprintf('rgb(%d, %d, %d)', $rgba[0], $rgba[1], $rgba[2]);
-	}
-	
-	// Otherwise use rgba() format
-	return sprintf('rgba(%d, %d, %d, %.3f)', $rgba[0], $rgba[1], $rgba[2], $rgba[3]);
 }
 
 function cmykToRgb($c, $m, $y, $k) {
@@ -387,6 +233,280 @@ function hsbToRgb($h, $s, $v) {
 		round($b * 255)
 	];
 }
+
+function oklabToRgb($L, $a, $b, $alpha = 1) {
+	// Convert from Oklab to linear RGB
+	// First convert to LMS
+	$l = $L + 0.3963377774 * $a + 0.2158037573 * $b;
+	$m = $L - 0.1055613458 * $a - 0.0638541728 * $b;
+	$s = $L - 0.0894841775 * $a - 1.2914855480 * $b;
+
+	// Inverse nonlinear transformation
+	$l = $l * $l * $l;
+	$m = $m * $m * $m;
+	$s = $s * $s * $s;
+
+	// Convert to linear RGB
+	$r = +4.0767416621 * $l - 3.3077115913 * $m + 0.2309699292 * $s;
+	$g = -1.2684380046 * $l + 2.6097574011 * $m - 0.3413193965 * $s;
+	$b = -0.0041960863 * $l - 0.7034186147 * $m + 1.7076147010 * $s;
+
+	// Clip and convert to sRGB
+	$toSRGB = function($x) {
+		if ($x <= 0) return 0;
+		if ($x >= 1) return 255;
+		return round(($x >= 0.0031308 ? 1.055 * pow($x, 1/2.4) - 0.055 : 12.92 * $x) * 255);
+	};
+
+	return [
+		$toSRGB($r),
+		$toSRGB($g),
+		$toSRGB($b),
+		$alpha
+	];
+}
+
+function oklchToRgb($L, $c, $h, $alpha = 1) {
+	// Convert polar form (LCH) to Cartesian form (Lab)
+	$a = $c * cos(deg2rad($h));
+	$b = $c * sin(deg2rad($h));
+	
+	// Use Oklab conversion
+	return oklabToRgb($L, $a, $b, $alpha);
+}
+
+function blendColors($fg, $bg, $alpha) {
+	// Alpha blend colors using the formula: result = fg * alpha + bg * (1 - alpha)
+	return [
+		($fg[0] * $alpha) + ($bg[0] * (1 - $alpha)),
+		($fg[1] * $alpha) + ($bg[1] * (1 - $alpha)),
+		($fg[2] * $alpha) + ($bg[2] * (1 - $alpha))
+	];
+}
+
+function getLuminance($rgb, $alpha = 1, $bg = null) {
+	// If we have alpha and background, blend first
+	if ($alpha < 1 && $bg !== null) {
+		$rgb = blendColors($rgb, $bg, $alpha);
+	}
+	
+	// Convert to relative luminance
+	$rgb = array_map(function($val) {
+		$val = $val / 255;
+		return $val <= 0.03928 ? $val / 12.92 : pow(($val + 0.055) / 1.055, 2.4);
+	}, $rgb);
+	
+	return $rgb[0] * 0.2126 + $rgb[1] * 0.7152 + $rgb[2] * 0.0722;
+}
+
+function getCleanColorName($color) {
+	// Remove CSS property names (case insensitive)
+	$color = preg_replace('/^(color|background-color|border-color):\s*/i', '', $color);    
+	// Remove any trailing semicolons or braces
+	$color = preg_replace('/[;{}].*$/', '', $color);
+	// Trim any whitespace
+	return trim($color);
+}
+
+function getContrastRatio($l1, $l2) {
+	// https://www.w3.org/TR/2008/REC-WCAG20-20081211/#contrast-ratiodef
+	$lighter = max($l1, $l2);
+	$darker = min($l1, $l2);
+	return ($lighter + 0.05) / ($darker + 0.05);
+}
+
+function getWCAGLevel($ratio) {
+	if ($ratio >= 7) return 'AAA';
+	if ($ratio >= 4.5) return 'AA';
+	if ($ratio >= 3) return 'AA Large';
+	return 'Fail';
+}
+
+function getCssColor($color) {
+	$rgba = parseColor($color);
+	if ($rgba === false) {
+		return '#000000'; // fallback color
+	}
+	
+	// If alpha is 1 or not specified, use rgb() format
+	if (!isset($rgba[3]) || $rgba[3] >= 0.999) {
+		return sprintf('rgb(%d, %d, %d)', $rgba[0], $rgba[1], $rgba[2]);
+	}
+	
+	// Otherwise use rgba() format
+	return sprintf('rgba(%d, %d, %d, %.3f)', $rgba[0], $rgba[1], $rgba[2], $rgba[3]);
+}
+
+// ░█▀█░█▀█░█▀▄░█▀▀░█▀▀░░░█▀▀░█▀█░█░░░█▀█░█▀▄░█▀▀
+// ░█▀▀░█▀█░█▀▄░▀▀█░█▀▀░░░█░░░█░█░█░░░█░█░█▀▄░▀▀█
+// ░▀░░░▀░▀░▀░▀░▀▀▀░▀▀▀░░░▀▀▀░▀▀▀░▀▀▀░▀▀▀░▀░▀░▀▀▀
+
+function parseColor($color) {
+	if (strlen($color) > 100) { // prevent long inputs that might mess up the code
+		return false;
+	}
+	
+	// Add CSS color name mapping
+	$cssColors = [
+		'aliceblue' => [240, 248, 255], 'antiquewhite' => [250, 235, 215], 'aqua' => [0, 255, 255], 'aquamarine' => [127, 255, 212], 'azure' => [240, 255, 255], 'beige' => [245, 245, 220], 'bisque' => [255, 228, 196], 'black' => [0, 0, 0], 'blanchedalmond' => [255, 235, 205], 'blue' => [0, 0, 255], 'blueviolet' => [138, 43, 226], 'brown' => [165, 42, 42], 'burlywood' => [222, 184, 135], 'cadetblue' => [95, 158, 160], 'chartreuse' => [127, 255, 0], 'chocolate' => [210, 105, 30], 'coral' => [255, 127, 80], 'cornflowerblue' => [100, 149, 237], 'cornsilk' => [255, 248, 220], 'crimson' => [220, 20, 60], 'cyan' => [0, 255, 255], 'darkblue' => [0, 0, 139], 'darkcyan' => [0, 139, 139], 'darkgoldenrod' => [184, 134, 11], 'darkgray' => [169, 169, 169], 'darkgreen' => [0, 100, 0], 'darkgrey' => [169, 169, 169], 'darkkhaki' => [189, 183, 107], 'darkmagenta' => [139, 0, 139], 'darkolivegreen' => [85, 107, 47], 'darkorange' => [255, 140, 0], 'darkorchid' => [153, 50, 204], 'darkred' => [139, 0, 0], 'darksalmon' => [233, 150, 122], 'darkseagreen' => [143, 188, 143], 'darkslateblue' => [72, 61, 139], 'darkslategray' => [47, 79, 79], 'darkslategrey' => [47, 79, 79], 'darkturquoise' => [0, 206, 209], 'darkviolet' => [148, 0, 211], 'deeppink' => [255, 20, 147], 'deepskyblue' => [0, 191, 255], 'dimgray' => [105, 105, 105], 'dimgrey' => [105, 105, 105], 'dodgerblue' => [30, 144, 255], 'firebrick' => [178, 34, 34], 'floralwhite' => [255, 250, 240], 'forestgreen' => [34, 139, 34], 'fuchsia' => [255, 0, 255], 'gainsboro' => [220, 220, 220], 'ghostwhite' => [248, 248, 255], 'gold' => [255, 215, 0], 'goldenrod' => [218, 165, 32], 'gray' => [128, 128, 128], 'grey' => [128, 128, 128], 'green' => [0, 128, 0], 'greenyellow' => [173, 255, 47], 'honeydew' => [240, 255, 240], 'hotpink' => [255, 105, 180], 'indianred' => [205, 92, 92], 'indigo' => [75, 0, 130], 'ivory' => [255, 255, 240], 'khaki' => [240, 230, 140], 'lavender' => [230, 230, 250], 'lavenderblush' => [255, 240, 245], 'lawngreen' => [124, 252, 0], 'lemonchiffon' => [255, 250, 205], 'lightblue' => [173, 216, 230], 'lightcoral' => [240, 128, 128], 'lightcyan' => [224, 255, 255], 'lightgoldenrodyellow' => [250, 250, 210], 'lightgray' => [211, 211, 211], 'lightgreen' => [144, 238, 144], 'lightgrey' => [211, 211, 211], 'lightpink' => [255, 182, 193], 'lightsalmon' => [255, 160, 122], 'lightseagreen' => [32, 178, 170], 'lightskyblue' => [135, 206, 250], 'lightslategray' => [119, 136, 153], 'lightslategrey' => [119, 136, 153], 'lightsteelblue' => [176, 196, 222], 'lightyellow' => [255, 255, 224], 'lime' => [0, 255, 0], 'limegreen' => [50, 205, 50], 'linen' => [250, 240, 230], 'magenta' => [255, 0, 255], 'maroon' => [128, 0, 0], 'mediumaquamarine' => [102, 205, 170], 'mediumblue' => [0, 0, 205], 'mediumorchid' => [186, 85, 211], 'mediumpurple' => [147, 112, 219], 'mediumseagreen' => [60, 179, 113], 'mediumslateblue' => [123, 104, 238], 'mediumspringgreen' => [0, 250, 154], 'mediumturquoise' => [72, 209, 204], 'mediumvioletred' => [199, 21, 133], 'midnightblue' => [25, 25, 112], 'mintcream' => [245, 255, 250], 'mistyrose' => [255, 228, 225], 'moccasin' => [255, 228, 181], 'navajowhite' => [255, 222, 173], 'navy' => [0, 0, 128], 'oldlace' => [253, 245, 230], 'olive' => [128, 128, 0], 'olivedrab' => [107, 142, 35], 'orange' => [255, 165, 0], 'orangered' => [255, 69, 0], 'orchid' => [218, 112, 214], 'palegoldenrod' => [238, 232, 170], 'palegreen' => [152, 251, 152], 'paleturquoise' => [175, 238, 238], 'palevioletred' => [219, 112, 147], 'papayawhip' => [255, 239, 213], 'peachpuff' => [255, 218, 185], 'peru' => [205, 133, 63], 'pink' => [255, 192, 203], 'plum' => [221, 160, 221], 'powderblue' => [176, 224, 230], 'purple' => [128, 0, 128], 'rebeccapurple' => [102, 51, 153], 'red' => [255, 0, 0], 'rosybrown' => [188, 143, 143], 'royalblue' => [65, 105, 225], 'saddlebrown' => [139, 69, 19], 'salmon' => [250, 128, 114], 'sandybrown' => [244, 164, 96], 'seagreen' => [46, 139, 87], 'seashell' => [255, 245, 238], 'sienna' => [160, 82, 45], 'silver' => [192, 192, 192], 'skyblue' => [135, 206, 235], 'slateblue' => [106, 90, 205], 'slategray' => [112, 128, 144], 'slategrey' => [112, 128, 144], 'snow' => [255, 250, 250], 'springgreen' => [0, 255, 127], 'steelblue' => [70, 130, 180], 'tan' => [210, 180, 140], 'teal' => [0, 128, 128], 'thistle' => [216, 191, 216], 'tomato' => [255, 99, 71], 'turquoise' => [64, 224, 208], 'violet' => [238, 130, 238], 'wheat' => [245, 222, 179], 'white' => [255, 255, 255], 'whitesmoke' => [245, 245, 245], 'yellow' => [255, 255, 0], 'yellowgreen' => [154, 205, 50]
+	];
+
+	// Strip // comments
+	$color = preg_replace('|//.*$|m', '', $color);
+	
+	// Extract everything after the last colon, handling both CSS properties and variables
+	if (preg_match('/^.*:\s*(.+)$/', $color, $matches)) {
+		$color = $matches[1];
+	}
+	
+	// Strip any remaining CSS syntax or semicolons
+	$color = preg_replace('/;.*/', '', $color);    // Remove semicolon and anything after
+	$color = preg_replace('/}.*/', '', $color);    // Remove closing brace and anything after
+	$color = strtolower(trim($color));             // Normalize to lowercase
+	
+	// Check if it's a named CSS color
+	if (isset($cssColors[$color])) {
+		return array_merge($cssColors[$color], [1]); // Add alpha = 1 for named colors
+	}
+
+	// Validate hex format length before processing
+	if (preg_match('/^#[A-Fa-f0-9]+$/', $color) && strlen($color) != 4 && strlen($color) != 5 && strlen($color) != 7 && strlen($color) != 9) {
+		return false;
+	}
+
+	// Process valid hex colors
+	if (preg_match('/^#([A-Fa-f0-9]{3,8})$/', $color, $matches)) {
+		$hex = ltrim($color, '#');
+		$length = strlen($hex);
+		
+		switch($length) {
+			case 3: // #RGB
+				$r = hexdec($hex[0].$hex[0]);
+				$g = hexdec($hex[1].$hex[1]);
+				$b = hexdec($hex[2].$hex[2]);
+				return [$r, $g, $b, 1];
+			case 4: // #RGBA
+				$r = hexdec($hex[0].$hex[0]);
+				$g = hexdec($hex[1].$hex[1]);
+				$b = hexdec($hex[2].$hex[2]);
+				$a = hexdec($hex[3].$hex[3]) / 255;
+				return [$r, $g, $b, $a];
+			case 6: // #RRGGBB
+				$r = hexdec(substr($hex, 0, 2));
+				$g = hexdec(substr($hex, 2, 2));
+				$b = hexdec(substr($hex, 4, 2));
+				return [$r, $g, $b, 1];
+			case 8: // #RRGGBBAA
+				$r = hexdec(substr($hex, 0, 2));
+				$g = hexdec(substr($hex, 2, 2));
+				$b = hexdec(substr($hex, 4, 2));
+				$a = hexdec(substr($hex, 6, 2)) / 255;
+				return [$r, $g, $b, $a];
+		}
+	}
+
+	if (preg_match('/^cmyk\((\d+)%?,\s*(\d+)%?,\s*(\d+)%?,\s*(\d+)%?\)$/', $color, $matches)) {
+		return cmykToRgb(
+			floatval($matches[1]),
+			floatval($matches[2]),
+			floatval($matches[3]),
+			floatval($matches[4])
+		);
+	} elseif (preg_match('/^rgba?\(\s*(\d+)(?:\s+|\s*,\s*)(\d+)(?:\s+|\s*,\s*)(\d+)(?:\s*(?:\/|\s*,)\s*([\d.]+%?))?\s*\)$/', $color, $matches)) {
+		$alpha = isset($matches[4]) ? (str_ends_with($matches[4], '%') ? 
+			floatval(rtrim($matches[4], '%')) / 100 : 
+			floatval($matches[4])) : 1;
+		return [
+			intval($matches[1]),
+			intval($matches[2]),
+			intval($matches[3]),
+			$alpha
+		];
+	} elseif (preg_match('/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/', $color, $matches)) {
+		return [
+			intval($matches[1]),
+			intval($matches[2]),
+			intval($matches[3])
+		];
+	} elseif (preg_match('/^hsla?\(\s*(\d+)(?:\s+|\s*,\s*)(\d+)%(?:\s+|\s*,\s*)(\d+)%(?:\s*(?:\/|\s*,)\s*([\d.]+%?))?\s*\)$/', $color, $matches)) {
+	$alpha = isset($matches[4]) ? (str_ends_with($matches[4], '%') ? 
+			floatval(rtrim($matches[4], '%')) / 100 : 
+			floatval($matches[4])) : 1;
+		$rgb = hslToRgb($matches[1], $matches[2], $matches[3]);
+		return array_merge($rgb, [$alpha]);
+	} elseif (preg_match('/^hsl\((\d+),\s*(\d+)%,\s*(\d+)%\)$/', $color, $matches)) {
+		return hslToRgb($matches[1], $matches[2], $matches[3]);
+	} elseif (preg_match('/^lab\(\s*(\d+\.?\d*)%?\s+(-?\d+\.?\d*)\s+(-?\d+\.?\d*)(?:\s*\/\s*([\d.]+))?\s*\)$/', $color, $matches)) {
+		return array_merge(labToRgb(
+			floatval($matches[1]),
+			floatval($matches[2]),
+			floatval($matches[3])
+		), [isset($matches[4]) ? floatval($matches[4]) : 1]);
+	} elseif (preg_match('/^hsb\((\d+),\s*(\d+)%?,\s*(\d+)%?\)$/', $color, $matches)) {
+		return hsbToRgb(
+			floatval($matches[1]),
+			floatval($matches[2]),
+			floatval($matches[3])
+		);
+	} elseif (preg_match('/^hwb\(\s*(\d+)\s+(\d+)%\s+(\d+)%(?:\s*\/\s*([\d.]+))?\s*\)$/', $color, $matches)) {
+		$rgb = hwbToRgb(
+			floatval($matches[1]), 
+			floatval($matches[2]), 
+			floatval($matches[3])
+		);
+		return array_merge($rgb, [isset($matches[4]) ? floatval($matches[4]) : 1]);
+	} elseif (preg_match('/^lch\(\s*(\d*\.?\d+)%?\s+(\d*\.?\d+)\s+(\d*\.?\d+)(?:\s*\/\s*([\d.]+))?\s*\)$/', $color, $matches)) {
+		// Extract values
+		$lightness = floatval($matches[1]);
+		$chroma = floatval($matches[2]);
+		$hue = floatval($matches[3]);
+		$alpha = isset($matches[4]) ? floatval($matches[4]) : 1;
+		
+		// If lightness wasn't specified with %, scale it to 0-100 range if it's in 0-1 range
+		if (strpos($matches[1], '%') === false && $lightness <= 1) {
+			$lightness *= 100;
+		}
+		
+		$rgb = lchToRgb($lightness, $chroma, $hue, $alpha);
+		return $rgb;
+	} elseif (preg_match('/^oklab\(\s*(\d*\.?\d+)%?\s+(-?\d*\.?\d+)\s+(-?\d*\.?\d+)(?:\s*\/\s*([\d.]+))?\s*\)$/', $color, $matches)) {
+		// Extract values
+		$lightness = floatval($matches[1]);
+		$a = floatval($matches[2]);
+		$b = floatval($matches[3]);
+		$alpha = isset($matches[4]) ? floatval($matches[4]) : 1;
+		
+		// If lightness wasn't specified with %, scale it to 0-100 range if it's in 0-1 range
+		if (strpos($matches[1], '%') === false && $lightness <= 1) {
+			$lightness *= 100;
+		}
+		// Convert to 0-1 range
+		$lightness = $lightness / 100;
+		
+		return oklabToRgb($lightness, $a, $b, $alpha);
+
+	} elseif (preg_match('/^oklch\(\s*(\d*\.?\d+)%?\s+(\d*\.?\d+)\s+(\d*\.?\d+)(?:\s*\/\s*([\d.]+))?\s*\)$/', $color, $matches)) {
+		// Extract values
+		$lightness = floatval($matches[1]);
+		$chroma = floatval($matches[2]);
+		$hue = floatval($matches[3]);
+		$alpha = isset($matches[4]) ? floatval($matches[4]) : 1;
+		
+		// If lightness wasn't specified with %, scale it to 0-100 range if it's in 0-1 range
+		if (strpos($matches[1], '%') === false && $lightness <= 1) {
+			$lightness *= 100;
+		}
+		// Convert to 0-1 range
+		$lightness = $lightness / 100;
+		
+		return oklchToRgb($lightness, $chroma, $hue, $alpha);
+	}
+	return false;
+}
+
+// ░█▀▄░█▀█░█░█░█▀█░█░░░█▀█░█▀█░█▀▄░░░█▀▄░█▀▀░█▀█░█▀█░█▀▄░▀█▀
+// ░█░█░█░█░█▄█░█░█░█░░░█░█░█▀█░█░█░░░█▀▄░█▀▀░█▀▀░█░█░█▀▄░░█░
+// ░▀▀░░▀▀▀░▀░▀░▀░▀░▀▀▀░▀▀▀░▀░▀░▀▀░░░░▀░▀░▀▀▀░▀░░░▀▀▀░▀░▀░░▀░
 
 // Process download request
 if (isset($_POST['download']) && !empty($_POST['colors'])) {
@@ -561,6 +681,10 @@ if (isset($_POST['download']) && !empty($_POST['colors'])) {
 	exit;
 }
 
+// ░█▀█░█▀▄░█▀█░█▀▀░█▀▀░█▀▀░█▀▀░░░█▀▀░█▀█░█▀▄░█▄█░░░█▀▀░█▀█░█░░░█▀█░█▀▄░█▀▀
+// ░█▀▀░█▀▄░█░█░█░░░█▀▀░▀▀█░▀▀█░░░█▀▀░█░█░█▀▄░█░█░░░█░░░█░█░█░░░█░█░█▀▄░▀▀█
+// ░▀░░░▀░▀░▀▀▀░▀▀▀░▀▀▀░▀▀▀░▀▀▀░░░▀░░░▀▀▀░▀░▀░▀░▀░░░▀▀▀░▀▀▀░▀▀▀░▀▀▀░▀░▀░▀▀▀
+
 // Process form submission
 $parsed_colors = [];
 $invalid_colors = [];
@@ -604,6 +728,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['colors'])) {
 		}
 	}
 }
+
+// ░█▀▄░█▀▄░█▀█░█░█░░░█░█░▀█▀░█▄█░█░░
+// ░█░█░█▀▄░█▀█░█▄█░░░█▀█░░█░░█░█░█░░
+// ░▀▀░░▀░▀░▀░▀░▀░▀░░░▀░▀░░▀░░▀░▀░▀▀▀
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -629,13 +758,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['colors'])) {
 		<p>Enter up to 20 colors (one per line) in any of these formats:</p>
 		<ul>
 			<li><strong>Hex</strong>: #FFF, #FFFFFF, #FFFF (with alpha), #FFFFFFFF (with alpha)</li>
-			<li><strong>RGB and RGBA</strong>: rgb(255, 255, 255) rgba(255, 255, 255, 0.5)</li>
-			<li><strong>HSL and HSLA</strong>: hsl(360, 100%, 100%) hsla(360, 100%, 100%, 0.5)</li>
-			<li>CSS <strong>Named colors</strong>, like "black", "white", or "coral"</li>
-			<li><strong>CMYK</strong>: cmyk(100%, 0%, 0%, 0%) or cmyk(0, 100, 100, 0)</li>
-			<li><strong>Lab</strong>: lab(75.5, 20.3, -15.6)</li>
-				<li><strong>HSB and HSV</strong>: hsb(240, 100%, 100%) or hsb(120, 50, 75)</li>
+			<li><strong>RGB and RGBA</strong>: rgb(255, 255, 255) and rgba(255, 255, 255, 0.5)</li>
+			<li><strong>HSL and HSLA</strong>: hsl(360, 100%, 100%) and hsla(360, 100%, 100%, 0.5)</li>
+			<li>CSS <strong>Named Colors</strong>, like "black", "white", or "coral"</li>
+			<li><strong>Lab</strong>: lab(75.5, 20.3, -15.6) and lab(50% 40 59.5 / 0.5)</li>
+			<li><strong>HSB and HSV</strong>: hsb(240, 100%, 100%) and hsb(120, 50, 75)</li>
+			<li><strong>LCH</strong>: lch(50% 70 200) and lch(52.2345% 72.2 56.2 / .5)</li>
+			<li><strong>Oklab</strong>: oklab(59% 0.1 0.1) and oklab(59% 0.1 0.1 / 0.5)</li>
+			<li><strong>Oklch</strong>: oklch(60% 0.15 50) and oklch(60% 0.15 50 / 0.5)</li>
+			<li><strong>CMYK</strong>: cmyk(100%, 0%, 0%, 0%) and cmyk(0, 100, 100, 0)</li>
 			<li>CSS syntax is also accepted (e.g., "color: #FFF;" or "background-color: rgb(255, 0, 0);")</li>
+			<li>Note: <code>from</code> and <code>calc()</code> are not supported.</li>
 		</ul>
 		<textarea name="colors" required><?= isset($_POST['colors']) ? htmlspecialchars($_POST['colors']) : '' ?></textarea>
 		<br><br>
