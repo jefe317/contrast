@@ -5,9 +5,8 @@ ini_set('display_errors', 1);
 date_default_timezone_set('America/Chicago');
 
 // TODO:
-// split entry on semicolon for inline css
 // colorblindness sim?
-// print styles? remove form on print? download html button? black and white output, text only output
+// black and white output, text only output
 // try and break the code, improve testing data below
 // help / instructions / documentation / explanation page, linked up top
 // competitor analysis
@@ -100,6 +99,42 @@ function parseColor($color) {
 		return array_merge($cssColors[$color], [1]); // Add alpha = 1 for named colors
 	}
 
+	// Validate hex format length before processing
+    if (preg_match('/^#[A-Fa-f0-9]+$/', $color) && strlen($color) != 4 && strlen($color) != 5 && strlen($color) != 7 && strlen($color) != 9) {
+        return false;
+    }
+
+    // Process valid hex colors
+    if (preg_match('/^#([A-Fa-f0-9]{3,8})$/', $color, $matches)) {
+        $hex = ltrim($color, '#');
+        $length = strlen($hex);
+        
+        switch($length) {
+            case 3: // #RGB
+                $r = hexdec($hex[0].$hex[0]);
+                $g = hexdec($hex[1].$hex[1]);
+                $b = hexdec($hex[2].$hex[2]);
+                return [$r, $g, $b, 1];
+            case 4: // #RGBA
+                $r = hexdec($hex[0].$hex[0]);
+                $g = hexdec($hex[1].$hex[1]);
+                $b = hexdec($hex[2].$hex[2]);
+                $a = hexdec($hex[3].$hex[3]) / 255;
+                return [$r, $g, $b, $a];
+            case 6: // #RRGGBB
+                $r = hexdec(substr($hex, 0, 2));
+                $g = hexdec(substr($hex, 2, 2));
+                $b = hexdec(substr($hex, 4, 2));
+                return [$r, $g, $b, 1];
+            case 8: // #RRGGBBAA
+                $r = hexdec(substr($hex, 0, 2));
+                $g = hexdec(substr($hex, 2, 2));
+                $b = hexdec(substr($hex, 4, 2));
+                $a = hexdec(substr($hex, 6, 2)) / 255;
+                return [$r, $g, $b, $a];
+        }
+    }
+	
 	if (preg_match('/^cmyk\((\d+)%?,\s*(\d+)%?,\s*(\d+)%?,\s*(\d+)%?\)$/', $color, $matches)) {
 		return cmykToRgb(
 			floatval($matches[1]),
@@ -107,37 +142,6 @@ function parseColor($color) {
 			floatval($matches[3]),
 			floatval($matches[4])
 		);
-	} elseif (preg_match('/^#([A-Fa-f0-9]{3,8})$/', $color, $matches)) {
-		// HEX colors
-		$hex = ltrim($color, '#');
-		$length = strlen($hex);
-		
-		if ($length == 3) {
-			// #RGB format
-			$r = hexdec($hex[0].$hex[0]);
-			$g = hexdec($hex[1].$hex[1]);
-			$b = hexdec($hex[2].$hex[2]);
-			$a = 1;
-		} elseif ($length == 4) {
-			// #RGBA format
-			$r = hexdec($hex[0].$hex[0]);
-			$g = hexdec($hex[1].$hex[1]);
-			$b = hexdec($hex[2].$hex[2]);
-			$a = hexdec($hex[3].$hex[3]) / 255;
-		} elseif ($length == 6) {
-			// #RRGGBB format
-			$r = hexdec(substr($hex, 0, 2));
-			$g = hexdec(substr($hex, 2, 2));
-			$b = hexdec(substr($hex, 4, 2));
-			$a = 1;
-		} elseif ($length == 8) {
-			// #RRGGBBAA format
-			$r = hexdec(substr($hex, 0, 2));
-			$g = hexdec(substr($hex, 2, 2));
-			$b = hexdec(substr($hex, 4, 2));
-			$a = hexdec(substr($hex, 6, 2)) / 255;
-		}
-		return [$r, $g, $b, $a];
 	} elseif (preg_match('/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/', $color, $matches)) {
 		return [
 			intval($matches[1]),
@@ -567,12 +571,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['colors'])) {
 		die("Input too large");
 	}
 	
-	// Clean up the input text - trim each line and remove empty lines
-	$cleaned_input = array_map('trim', explode("\n", $_POST['colors']));
+	// Split on both newlines and commas, then clean up each entry
+	$cleaned_input = preg_split('/(?<=;|\n)/', $_POST['colors']);
+	$cleaned_input = array_map('trim', $cleaned_input);
 	$cleaned_input = array_filter($cleaned_input, 'strlen');  // Remove empty lines
 	$_POST['colors'] = implode("\n", $cleaned_input);  // Put it back together with newlines
 	
-	// Rest of your processing code...
 	$colors = array_map(function($color) {
 		return substr($color, 0, 50); // Additional length check
 	}, $cleaned_input);
