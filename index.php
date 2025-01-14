@@ -2,6 +2,8 @@
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
+date_default_timezone_set('America/Chicago');
+
 // TODO:
 // split entry on semicolon for inline css
 // colorblindness sim?
@@ -382,6 +384,179 @@ function hsbToRgb($h, $s, $v) {
 	];
 }
 
+// Process download request
+if (isset($_POST['download']) && !empty($_POST['colors'])) {
+	// Re-process the colors since we're in a new request
+	$colors = array_map('trim', explode("\n", $_POST['colors']));
+	$colors = array_filter($colors, 'strlen');
+	$colors = array_slice($colors, 0, 20);
+	
+	if (count($colors) === 1) {
+		$test_color = parseColor($colors[0]);
+		if ($test_color !== false) {
+			array_push($colors, 'black', 'white');
+		}
+	}
+	
+	$parsed_colors = [];
+	foreach ($colors as $original_color) {
+		$rgb = parseColor($original_color);
+		if ($rgb !== false) {
+			$parsed_colors[$original_color] = [
+				'rgb' => array_slice($rgb, 0, 3),
+				'alpha' => isset($rgb[3]) ? $rgb[3] : 1,
+				'luminance' => getLuminance(array_slice($rgb, 0, 3))
+			];
+		}
+	}
+	
+	$timestamp = date('Ymd-His');
+	$filename = "color-contrast-report-{$timestamp}.html";
+	
+	header('Content-Type: text/html');
+	header('Content-Disposition: attachment; filename="' . $filename . '"');
+	
+	// Generate report HTML
+	ob_start();
+	?>
+	<!DOCTYPE html>
+	<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>Color Contrast Report - <?= date('Y-m-d H:i:s') ?></title>
+		<style>
+			body { font-family: Arial, sans-serif; margin: 20px; }
+			table { border-collapse: collapse; margin: 20px 0; }
+			th, td { border: 1px solid #000; padding: 8px; text-align: left; vertical-align: top; }
+			td div { padding: 0 0.5em 0.5em 0; }
+			.checkered { background: conic-gradient(hsla(0, 0%, 50%, 20%) 90deg, transparent 90deg 180deg, hsla(0, 0%, 50%, 20%) 180deg 270deg, transparent 270deg); background-repeat: repeat; background-size: 40px 40px; }
+		</style>
+	</head>
+	<body>
+		<h1>Color Contrast Report</h1>
+		<p>Generated on: <?= date('Y-m-d H:i:s T') ?></p>
+		
+		<?php if (!empty($parsed_colors)): ?>
+			<h2>Summary of Compatible Color Combinations</h2>
+			<table class="checkered">
+				<thead>
+					<tr>
+						<th>Background</th>
+						<th>AAA ≥ 7.0<br>Best</th>
+						<th>AA Normal ≥ 4.5<br>Second Best </th>
+						<th>AA Large ≥ 3.0<br>Third Best</th>
+					</tr>
+				</thead>
+				<tbody>
+					<?php foreach ($parsed_colors as $bg_color => $bg): 
+						$combinations = [];
+						foreach ($parsed_colors as $fg_color => $fg) {
+							if ($fg_color === $bg_color) continue;
+							
+							$fg_lum = getLuminance($fg['rgb'], $fg['alpha'], $bg['rgb']);
+							$bg_lum = $bg['luminance'];
+							$contrast = getContrastRatio($bg_lum, $fg_lum);
+							
+							$wcag_level = getWCAGLevel($contrast);
+							if ($wcag_level !== 'Fail') {
+								$combinations[] = [
+									'color' => $fg_color,
+									'contrast' => $contrast,
+									'level' => $wcag_level
+								];
+							}
+						}
+
+						$wcag_groups = [
+							'AAA' => [],
+							'AA' => [],
+							'AA Large' => []
+						];
+						
+						foreach ($combinations as $combo) {
+							$wcag_groups[$combo['level']][] = $combo;
+						}
+						
+						foreach ($wcag_groups as &$group) {
+							usort($group, function($a, $b) {
+								return $b['contrast'] <=> $a['contrast'];
+							});
+						}
+
+						$has_valid_combinations = !empty($wcag_groups['AAA']) || 
+											   !empty($wcag_groups['AA']) || 
+											   !empty($wcag_groups['AA Large']);
+					?>
+					<tr style="background-color: <?= htmlspecialchars(getCssColor($bg_color)) ?>;">
+						<td>
+							<?php 
+							$bg_text_lum = getLuminance($bg['rgb'], $bg['alpha']);
+							?>
+							<span style="color: <?= $bg_text_lum > 0.5 ? '#000000' : '#FFFFFF' ?>">
+								<?= htmlspecialchars(getCleanColorName($bg_color)) ?><br>
+							</span>
+						</td>
+						<?php if ($has_valid_combinations): ?>
+							<?php foreach (['AAA', 'AA', 'AA Large'] as $level): ?>
+								<td>
+									<?php foreach ($wcag_groups[$level] as $combo): ?>
+										<div style="color: <?= htmlspecialchars(getCssColor($combo['color'])) ?>;">
+											<?= htmlspecialchars($combo['color']) ?> 
+											(Ratio: <?= number_format($combo['contrast'], 2) ?>)
+										</div>
+									<?php endforeach; ?>
+								</td>
+							<?php endforeach; ?>
+						<?php else: ?>
+							<td colspan="3" style="text-align: center; color: <?= $bg_text_lum > 0.5 ? '#000000' : '#FFFFFF' ?>">
+								No valid color combinations found (all contrast ratios below 3.0)
+							</td>
+						<?php endif; ?>
+					</tr>
+					<?php endforeach; ?>
+				</tbody>
+			</table>
+
+			<h2>Complete Contrast Grid</h2>
+			<table class="checkered">
+				<tr>
+					<th>BG \ FG</th>
+					<?php foreach ($parsed_colors as $color => $data): ?>
+						<th><?= htmlspecialchars(getCleanColorName($color)) ?></th>
+					<?php endforeach; ?>
+				</tr>
+				<?php foreach ($parsed_colors as $bg_color => $bg_data): ?>
+					<tr>
+						<th><?= htmlspecialchars(getCleanColorName($bg_color)) ?></th>
+						<?php foreach ($parsed_colors as $fg_color => $fg_data): 
+							$fg_lum = getLuminance($fg_data['rgb'], $fg_data['alpha'], $bg_data['rgb']);
+							$bg_lum = $bg_data['luminance'];
+							$contrast = getContrastRatio($bg_lum, $fg_lum);
+							$wcag_level = getWCAGLevel($contrast);
+						?>
+							<td style="background-color: <?= htmlspecialchars(getCssColor($bg_color)) ?>;">
+								<div class="sample-text" style="color: <?= htmlspecialchars(getCssColor($fg_color)) ?>;">
+									Sample
+									<div style="font-size: 0.8em;">
+										<?= number_format($contrast, 2) ?><br>
+										<?= $wcag_level ?>
+									</div>
+								</div>
+							</td>
+						<?php endforeach; ?>
+					</tr>
+				<?php endforeach; ?>
+			</table>
+		<?php endif; ?>
+	</body>
+	</html>
+	<?php
+	$html = ob_get_clean();
+	echo $html;
+	exit;
+}
+
 // Process form submission
 $parsed_colors = [];
 $invalid_colors = [];
@@ -463,6 +638,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['colors'])) {
 		<button type="submit">Calculate Contrast</button>
 	</form>
 	
+	<?php if (!empty($parsed_colors)): ?>
+		<div style="margin-top: 1em;"><form method="post">
+			<input type="hidden" name="colors" value="<?= htmlspecialchars($_POST['colors']) ?>">
+			<button type="submit" name="download" value="1">Download Report</button>
+		</form></div>
+	<?php endif; ?>
+
 	<?php if (!empty($invalid_colors)): ?>
 		<div class="error-message">
 			<h3>Invalid Colors Detected</h3>
@@ -476,91 +658,91 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['colors'])) {
 	<?php endif; ?>
 
 	<?php if (!empty($parsed_colors)): ?>
-	    <h2>Summary of Compatible Color Combinations</h2>
-	    <table class="checkered">
-	        <thead>
-	            <tr>
-	                <th>Background</th>
-	                <th>AAA ≥ 7.0<br>Best</th>
-	                <th>AA Normal ≥ 4.5<br>Second Best </th>
-	                <th>AA Large ≥ 3.0<br>Third Best</th>
-	            </tr>
-	        </thead>
-	        <tbody>
-	            <?php foreach ($parsed_colors as $bg_color => $bg): 
-	                // Calculate all combinations for this background color
-	                $combinations = [];
-	                foreach ($parsed_colors as $fg_color => $fg) {
-	                    if ($fg_color === $bg_color) continue;
-	                    
-	                    // Calculate luminance with alpha blending
-	                    $fg_lum = getLuminance($fg['rgb'], $fg['alpha'], $bg['rgb']);
-	                    $bg_lum = $bg['luminance'];
-	                    $contrast = getContrastRatio($bg_lum, $fg_lum);
-	                    
-	                    $wcag_level = getWCAGLevel($contrast);
-	                    if ($wcag_level !== 'Fail') {
-	                        $combinations[] = [
-	                            'color' => $fg_color,
-	                            'contrast' => $contrast,
-	                            'level' => $wcag_level
-	                        ];
-	                    }
-	                }
+		<h2>Summary of Compatible Color Combinations</h2>
+		<table class="checkered">
+			<thead>
+				<tr>
+					<th>Background</th>
+					<th>AAA ≥ 7.0<br>Best</th>
+					<th>AA Normal ≥ 4.5<br>Second Best </th>
+					<th>AA Large ≥ 3.0<br>Third Best</th>
+				</tr>
+			</thead>
+			<tbody>
+				<?php foreach ($parsed_colors as $bg_color => $bg): 
+					// Calculate all combinations for this background color
+					$combinations = [];
+					foreach ($parsed_colors as $fg_color => $fg) {
+						if ($fg_color === $bg_color) continue;
+						
+						// Calculate luminance with alpha blending
+						$fg_lum = getLuminance($fg['rgb'], $fg['alpha'], $bg['rgb']);
+						$bg_lum = $bg['luminance'];
+						$contrast = getContrastRatio($bg_lum, $fg_lum);
+						
+						$wcag_level = getWCAGLevel($contrast);
+						if ($wcag_level !== 'Fail') {
+							$combinations[] = [
+								'color' => $fg_color,
+								'contrast' => $contrast,
+								'level' => $wcag_level
+							];
+						}
+					}
 
-	                // Group by WCAG level
-	                $wcag_groups = [
-	                    'AAA' => [],
-	                    'AA' => [],
-	                    'AA Large' => []
-	                ];
-	                
-	                foreach ($combinations as $combo) {
-	                    $wcag_groups[$combo['level']][] = $combo;
-	                }
-	                
-	                // Sort each group by contrast ratio
-	                foreach ($wcag_groups as &$group) {
-	                    usort($group, function($a, $b) {
-	                        return $b['contrast'] <=> $a['contrast'];
-	                    });
-	                }
+					// Group by WCAG level
+					$wcag_groups = [
+						'AAA' => [],
+						'AA' => [],
+						'AA Large' => []
+					];
+					
+					foreach ($combinations as $combo) {
+						$wcag_groups[$combo['level']][] = $combo;
+					}
+					
+					// Sort each group by contrast ratio
+					foreach ($wcag_groups as &$group) {
+						usort($group, function($a, $b) {
+							return $b['contrast'] <=> $a['contrast'];
+						});
+					}
 
-	                // Check if there are any valid combinations
-	                $has_valid_combinations = !empty($wcag_groups['AAA']) || 
-	                                       !empty($wcag_groups['AA']) || 
-	                                       !empty($wcag_groups['AA Large']);
-	            ?>
-	            <tr style="background-color: <?= htmlspecialchars(getCssColor($bg_color)) ?>;">
-	                <td>
-	                    <?php 
-	                    // Use alpha-aware luminance for text color calculation
-	                    $bg_text_lum = getLuminance($bg['rgb'], $bg['alpha']);
-	                    ?>
-	                    <span style="color: <?= $bg_text_lum > 0.5 ? '#000000' : '#FFFFFF' ?>">
-	                        <?= htmlspecialchars(getCleanColorName($bg_color)) ?><br>
-	                    </span>
-	                </td>
-	                <?php if ($has_valid_combinations): ?>
-	                    <?php foreach (['AAA', 'AA', 'AA Large'] as $level): ?>
-	                        <td>
-	                            <?php foreach ($wcag_groups[$level] as $combo): ?>
-	                                <div style="color: <?= htmlspecialchars(getCssColor($combo['color'])) ?>;">
-	                                    <?= htmlspecialchars($combo['color']) ?> 
-	                                    (Ratio: <?= number_format($combo['contrast'], 2) ?>)
-	                                </div>
-	                            <?php endforeach; ?>
-	                        </td>
-	                    <?php endforeach; ?>
-	                <?php else: ?>
-	                    <td colspan="3" style="text-align: center; color: <?= $bg_text_lum > 0.5 ? '#000000' : '#FFFFFF' ?>">
-	                        No valid color combinations found (all contrast ratios below 3.0)
-	                    </td>
-	                <?php endif; ?>
-	            </tr>
-	            <?php endforeach; ?>
-	        </tbody>
-	    </table>
+					// Check if there are any valid combinations
+					$has_valid_combinations = !empty($wcag_groups['AAA']) || 
+										   !empty($wcag_groups['AA']) || 
+										   !empty($wcag_groups['AA Large']);
+				?>
+				<tr style="background-color: <?= htmlspecialchars(getCssColor($bg_color)) ?>;">
+					<td>
+						<?php 
+						// Use alpha-aware luminance for text color calculation
+						$bg_text_lum = getLuminance($bg['rgb'], $bg['alpha']);
+						?>
+						<span style="color: <?= $bg_text_lum > 0.5 ? '#000000' : '#FFFFFF' ?>">
+							<?= htmlspecialchars(getCleanColorName($bg_color)) ?><br>
+						</span>
+					</td>
+					<?php if ($has_valid_combinations): ?>
+						<?php foreach (['AAA', 'AA', 'AA Large'] as $level): ?>
+							<td>
+								<?php foreach ($wcag_groups[$level] as $combo): ?>
+									<div style="color: <?= htmlspecialchars(getCssColor($combo['color'])) ?>;">
+										<?= htmlspecialchars($combo['color']) ?> 
+										(Ratio: <?= number_format($combo['contrast'], 2) ?>)
+									</div>
+								<?php endforeach; ?>
+							</td>
+						<?php endforeach; ?>
+					<?php else: ?>
+						<td colspan="3" style="text-align: center; color: <?= $bg_text_lum > 0.5 ? '#000000' : '#FFFFFF' ?>">
+							No valid color combinations found (all contrast ratios below 3.0)
+						</td>
+					<?php endif; ?>
+				</tr>
+				<?php endforeach; ?>
+			</tbody>
+		</table>
 
 		<h2>Complete Contrast Grid</h2>
 		<table class="checkered">
