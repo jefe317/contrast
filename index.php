@@ -1,4 +1,6 @@
 <?php
+// https://stackoverflow.com/a/69572700/1359286
+$start = hrtime(true);
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
@@ -704,7 +706,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['colors'])) {
 	$colors = array_map(function($color) {
 		return substr($color, 0, 50); // Additional length check
 	}, $cleaned_input);
-	$colors = array_slice($colors, 0, 20); // Limit to 20 colors
+	$colors = array_slice($colors, 0, 30); // Limit to 30 colors
 	
 	// If only one valid color is entered, automatically add black and white
 	if (count($colors) === 1) {
@@ -755,7 +757,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['colors'])) {
 <body>
 	<h1>WCAG Color Contrast Analyzer</h1>
 	<form method="post">
-		<p>Enter up to 20 colors (one per line) in any of these formats:</p>
+		<p>Enter up to 30 colors (one per line) in any of these formats:</p>
 		<ul>
 			<li><strong>Hex</strong>: #FFF, #FFFFFF, #FFFF (with alpha), #FFFFFFFF (with alpha)</li>
 			<li><strong>RGB and RGBA</strong>: rgb(255, 255, 255) and rgba(255, 255, 255, 0.5)</li>
@@ -913,5 +915,42 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['colors'])) {
 		<?php endforeach; ?>
 	</table>
 	<?php endif; ?>
+	<div style="font-size: 0.8em; color: rgba(150, 150, 150, 0.5); padding-top: 2em;">
+	<?php 
+	$end = hrtime(true);
+	$nanoseconds = $end - $start;
+	// convert time to readable values
+		// Create an array of time units and their nanosecond conversions
+	$units = [
+		'second' => 1e9,
+		'millisecond' => 1e6,
+		'microsecond' => 1e3,
+		'nanosecond' => 1
+	];
+
+	// Find the most appropriate unit
+	$value = $nanoseconds;
+	$unit = 'nanosecond';
+
+	foreach ($units as $name => $divisor) {
+		if ($nanoseconds >= $divisor) {
+			$value = $nanoseconds / $divisor;
+			$unit = $name;
+			break;
+		}
+	}
+
+	// Format the output with appropriate pluralization
+	$plural = $value != 1 ? 's' : '';
+	$seconds = $nanoseconds / 1e9; // Always show seconds as well if using a different unit
+
+	if ($unit !== 'second') {
+		echo sprintf("Code was running for %.6f seconds, which is %.0f %s%s", 
+			$seconds, $value, $unit, $plural);
+	} else {
+		echo sprintf("Code was running for %.6f seconds", $seconds);
+	}
+	?>
+	</div>
 </body>
 </html>
