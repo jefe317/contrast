@@ -336,6 +336,20 @@ function getCssColor($color) {
 	return sprintf('rgba(%d, %d, %d, %.3f)', $rgba[0], $rgba[1], $rgba[2], $rgba[3]);
 }
 
+function getCopyrightYears($foundedYear) {
+    $currentYear = date('Y');
+    $site = "&copy; <a href=\"https://jefftml.com\">Jeff Lange</a>";
+    if ($foundedYear > $currentYear) {
+        return $site;
+    }
+    
+    if ($foundedYear == $currentYear) {
+        return $site . " " . $currentYear;
+    }
+    
+    return $site . " " . $foundedYear . " - " . $currentYear;
+}
+
 // ░█▀█░█▀█░█▀▄░█▀▀░█▀▀░░░█▀▀░█▀█░█░░░█▀█░█▀▄░█▀▀
 // ░█▀▀░█▀█░█▀▄░▀▀█░█▀▀░░░█░░░█░█░█░░░█░█░█▀▄░▀▀█
 // ░▀░░░▀░▀░▀░▀░▀▀▀░▀▀▀░░░▀▀▀░▀▀▀░▀▀▀░▀▀▀░▀░▀░▀▀▀
@@ -558,6 +572,7 @@ if (isset($_POST['download']) && !empty($_POST['colors'])) {
 			th, td { border: 1px solid #000; padding: 8px; text-align: left; vertical-align: top; }
 			td div { padding: 0 0.5em 0.5em 0; }
 			.checkered { background: conic-gradient(hsla(0, 0%, 50%, 20%) 90deg, transparent 90deg 180deg, hsla(0, 0%, 50%, 20%) 180deg 270deg, transparent 270deg); background-repeat: repeat; background-size: 40px 40px; }
+			.footer { padding-top: 1em; }
 		</style>
 	</head>
 	<body>
@@ -676,6 +691,11 @@ if (isset($_POST['download']) && !empty($_POST['colors'])) {
 				<?php endforeach; ?>
 			</table>
 		<?php endif; ?>
+		<div class="footer">
+			<?php
+			echo getCopyrightYears(2024);
+			?>
+		</div>
 	</body>
 	</html>
 	<?php
@@ -707,7 +727,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['colors'])) {
 	$colors = array_map(function($color) {
 		return substr($color, 0, 50); // Additional length check
 	}, $cleaned_input);
-	$colors = array_slice($colors, 0, 30); // Limit to 30 colors
+	$colors = array_slice($colors, 0, 50); // Limit to 50 colors
 	
 	// If only one valid color is entered, automatically add black and white
 	if (count($colors) === 1) {
@@ -763,6 +783,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['colors'])) {
 		.checkered {background: conic-gradient(hsla(0, 0%, 50%, 20%) 90deg, transparent 90deg 180deg, hsla(0, 0%, 50%, 20%) 180deg 270deg, transparent 270deg); background-repeat: repeat; background-size: 40px 40px; }
 		.error-message { background-color: hsla(0 100% 63% / 0.5); border: 1px solid #f5c6cb; border-radius: 4px; padding: 12px; margin: 20px 0; width: fit-content;}
 		.error-message h3 { margin-top: 0; }
+		li { line-height: 1.5; }
+		.footer { padding-top: 1em; }
 	</style>
 	<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
 	<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
@@ -772,7 +794,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['colors'])) {
 <body>
 	<h1>Jeff's Color Contrast Analyzer</h1>
 	<form method="post">
-		<p>Enter up to 30 colors (one per line) in any of these formats:</p>
+		<p>Enter up to 50 colors (one per line) in any of these formats:</p>
 		<ul>
 			<li><strong>Hex</strong>: #FFF, #FFFFFF, #FFFA (with alpha), #FFFFFFAA (with alpha)</li>
 			<li><strong>RGB and RGBA</strong>: rgb(255, 255, 255) and rgba(255, 255, 255, 0.5)</li>
@@ -787,6 +809,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['colors'])) {
 			<li>CSS syntax is also accepted (e.g., "color: #FFF;" or "background-color: rgb(255, 0, 0);")</li>
 			<li>Note: <code>from</code> and <code>calc()</code> are not supported.</li>
 		</ul>
+		<p>Labels can be added to a color by placing the label before a colon, like "link: #2C5491"</p>
 		<textarea name="colors" required><?= isset($_POST['colors']) ? htmlspecialchars($_POST['colors']) : '' ?></textarea>
 		<br><br>
 		<button type="submit">Calculate Contrast</button>
@@ -966,6 +989,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['colors'])) {
 		echo sprintf("Code was running for %.6f seconds", $seconds);
 	}
 	?>
+	</div>
+	<div class="footer">
+		<?php
+		echo getCopyrightYears(2024);
+		?>
 	</div>
 </body>
 </html>
