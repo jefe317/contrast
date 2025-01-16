@@ -7,14 +7,9 @@ ini_set('display_errors', 0);
 date_default_timezone_set('America/Chicago');
 
 // TODO:
-// ignore lines that start and end with comments
-// support rgba without commas, just spaces
 // colorblindness sim?
 // black and white output, text only output
-// try and break the code, improve testing data below
 // help / instructions / documentation / explanation page, linked up top
-// competitor analysis
-// use supplied colors in code instead of rgba, make CSS classes? no benefit i can think of
 
 // Ensure secure session handling
 ini_set('session.cookie_httponly', 1);     // Prevent JavaScript access to session cookie
@@ -771,7 +766,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['colors'])) {
 	</style>
 </head>
 <body>
-	<h1>WCAG Color Contrast Analyzer</h1>
+	<h1>Jeff's Color Contrast Analyzer</h1>
 	<form method="post">
 		<p>Enter up to 30 colors (one per line) in any of these formats:</p>
 		<ul>
