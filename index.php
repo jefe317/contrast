@@ -764,6 +764,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['colors'])) {
 		.error-message { background-color: hsla(0 100% 63% / 0.5); border: 1px solid #f5c6cb; border-radius: 4px; padding: 12px; margin: 20px 0; width: fit-content;}
 		.error-message h3 { margin-top: 0; }
 	</style>
+	<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+	<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+	<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+	<link rel="manifest" href="/site.webmanifest">
 </head>
 <body>
 	<h1>Jeff's Color Contrast Analyzer</h1>
