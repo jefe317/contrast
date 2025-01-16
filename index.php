@@ -1,12 +1,14 @@
 <?php
 // https://stackoverflow.com/a/69572700/1359286
 $start = hrtime(true);
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
+// error_reporting(E_ALL);
+ini_set('display_errors', 0);
 
 date_default_timezone_set('America/Chicago');
 
 // TODO:
+// ignore lines that start and end with comments
+// support rgba without commas, just spaces
 // colorblindness sim?
 // black and white output, text only output
 // try and break the code, improve testing data below
@@ -43,8 +45,8 @@ ini_set('session.cookie_lifetime', 0);     // Cookie expires when browser closes
 
 // Optional: Force HTTPS (uncomment in production)
 // if (!isset($_SERVER['HTTPS']) || $_SERVER['HTTPS'] !== 'on') {
-//     header("Location: https://" . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']);
-//     exit;
+// 	header("Location: https://" . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']);
+// 	exit;
 // }
 
 // Start session if needed
@@ -353,6 +355,10 @@ function parseColor($color) {
 		'aliceblue' => [240, 248, 255], 'antiquewhite' => [250, 235, 215], 'aqua' => [0, 255, 255], 'aquamarine' => [127, 255, 212], 'azure' => [240, 255, 255], 'beige' => [245, 245, 220], 'bisque' => [255, 228, 196], 'black' => [0, 0, 0], 'blanchedalmond' => [255, 235, 205], 'blue' => [0, 0, 255], 'blueviolet' => [138, 43, 226], 'brown' => [165, 42, 42], 'burlywood' => [222, 184, 135], 'cadetblue' => [95, 158, 160], 'chartreuse' => [127, 255, 0], 'chocolate' => [210, 105, 30], 'coral' => [255, 127, 80], 'cornflowerblue' => [100, 149, 237], 'cornsilk' => [255, 248, 220], 'crimson' => [220, 20, 60], 'cyan' => [0, 255, 255], 'darkblue' => [0, 0, 139], 'darkcyan' => [0, 139, 139], 'darkgoldenrod' => [184, 134, 11], 'darkgray' => [169, 169, 169], 'darkgreen' => [0, 100, 0], 'darkgrey' => [169, 169, 169], 'darkkhaki' => [189, 183, 107], 'darkmagenta' => [139, 0, 139], 'darkolivegreen' => [85, 107, 47], 'darkorange' => [255, 140, 0], 'darkorchid' => [153, 50, 204], 'darkred' => [139, 0, 0], 'darksalmon' => [233, 150, 122], 'darkseagreen' => [143, 188, 143], 'darkslateblue' => [72, 61, 139], 'darkslategray' => [47, 79, 79], 'darkslategrey' => [47, 79, 79], 'darkturquoise' => [0, 206, 209], 'darkviolet' => [148, 0, 211], 'deeppink' => [255, 20, 147], 'deepskyblue' => [0, 191, 255], 'dimgray' => [105, 105, 105], 'dimgrey' => [105, 105, 105], 'dodgerblue' => [30, 144, 255], 'firebrick' => [178, 34, 34], 'floralwhite' => [255, 250, 240], 'forestgreen' => [34, 139, 34], 'fuchsia' => [255, 0, 255], 'gainsboro' => [220, 220, 220], 'ghostwhite' => [248, 248, 255], 'gold' => [255, 215, 0], 'goldenrod' => [218, 165, 32], 'gray' => [128, 128, 128], 'grey' => [128, 128, 128], 'green' => [0, 128, 0], 'greenyellow' => [173, 255, 47], 'honeydew' => [240, 255, 240], 'hotpink' => [255, 105, 180], 'indianred' => [205, 92, 92], 'indigo' => [75, 0, 130], 'ivory' => [255, 255, 240], 'khaki' => [240, 230, 140], 'lavender' => [230, 230, 250], 'lavenderblush' => [255, 240, 245], 'lawngreen' => [124, 252, 0], 'lemonchiffon' => [255, 250, 205], 'lightblue' => [173, 216, 230], 'lightcoral' => [240, 128, 128], 'lightcyan' => [224, 255, 255], 'lightgoldenrodyellow' => [250, 250, 210], 'lightgray' => [211, 211, 211], 'lightgreen' => [144, 238, 144], 'lightgrey' => [211, 211, 211], 'lightpink' => [255, 182, 193], 'lightsalmon' => [255, 160, 122], 'lightseagreen' => [32, 178, 170], 'lightskyblue' => [135, 206, 250], 'lightslategray' => [119, 136, 153], 'lightslategrey' => [119, 136, 153], 'lightsteelblue' => [176, 196, 222], 'lightyellow' => [255, 255, 224], 'lime' => [0, 255, 0], 'limegreen' => [50, 205, 50], 'linen' => [250, 240, 230], 'magenta' => [255, 0, 255], 'maroon' => [128, 0, 0], 'mediumaquamarine' => [102, 205, 170], 'mediumblue' => [0, 0, 205], 'mediumorchid' => [186, 85, 211], 'mediumpurple' => [147, 112, 219], 'mediumseagreen' => [60, 179, 113], 'mediumslateblue' => [123, 104, 238], 'mediumspringgreen' => [0, 250, 154], 'mediumturquoise' => [72, 209, 204], 'mediumvioletred' => [199, 21, 133], 'midnightblue' => [25, 25, 112], 'mintcream' => [245, 255, 250], 'mistyrose' => [255, 228, 225], 'moccasin' => [255, 228, 181], 'navajowhite' => [255, 222, 173], 'navy' => [0, 0, 128], 'oldlace' => [253, 245, 230], 'olive' => [128, 128, 0], 'olivedrab' => [107, 142, 35], 'orange' => [255, 165, 0], 'orangered' => [255, 69, 0], 'orchid' => [218, 112, 214], 'palegoldenrod' => [238, 232, 170], 'palegreen' => [152, 251, 152], 'paleturquoise' => [175, 238, 238], 'palevioletred' => [219, 112, 147], 'papayawhip' => [255, 239, 213], 'peachpuff' => [255, 218, 185], 'peru' => [205, 133, 63], 'pink' => [255, 192, 203], 'plum' => [221, 160, 221], 'powderblue' => [176, 224, 230], 'purple' => [128, 0, 128], 'rebeccapurple' => [102, 51, 153], 'red' => [255, 0, 0], 'rosybrown' => [188, 143, 143], 'royalblue' => [65, 105, 225], 'saddlebrown' => [139, 69, 19], 'salmon' => [250, 128, 114], 'sandybrown' => [244, 164, 96], 'seagreen' => [46, 139, 87], 'seashell' => [255, 245, 238], 'sienna' => [160, 82, 45], 'silver' => [192, 192, 192], 'skyblue' => [135, 206, 235], 'slateblue' => [106, 90, 205], 'slategray' => [112, 128, 144], 'slategrey' => [112, 128, 144], 'snow' => [255, 250, 250], 'springgreen' => [0, 255, 127], 'steelblue' => [70, 130, 180], 'tan' => [210, 180, 140], 'teal' => [0, 128, 128], 'thistle' => [216, 191, 216], 'tomato' => [255, 99, 71], 'turquoise' => [64, 224, 208], 'violet' => [238, 130, 238], 'wheat' => [245, 222, 179], 'white' => [255, 255, 255], 'whitesmoke' => [245, 245, 245], 'yellow' => [255, 255, 0], 'yellowgreen' => [154, 205, 50]
 	];
 
+	// Remove multiline comments
+	$color = preg_replace('/\/\*.*?\*\//s', '', $color);
+	// Remove inline comments until newline or semicolon
+	$color = preg_replace('/\/\/[^;\n]*[;\n]/', '', $color);
 	// Strip // comments
 	$color = preg_replace('|//.*$|m', '', $color);
 	
@@ -414,23 +420,23 @@ function parseColor($color) {
 			floatval($matches[3]),
 			floatval($matches[4])
 		);
-	} elseif (preg_match('/^rgba?\(\s*(\d+)(?:\s+|\s*,\s*)(\d+)(?:\s+|\s*,\s*)(\d+)(?:\s*(?:\/|\s*,)\s*([\d.]+%?))?\s*\)$/', $color, $matches)) {
+	} elseif (preg_match('/^rgba?\(\s*([\d.]+)(?:\s+|\s*,\s*)([\d.]+)(?:\s+|\s*,\s*)([\d.]+)(?:\s*(?:\/|\s*,)\s*([\d.]+%?))?\s*\)$/', $color, $matches)) {
 		$alpha = isset($matches[4]) ? (str_ends_with($matches[4], '%') ? 
 			floatval(rtrim($matches[4], '%')) / 100 : 
 			floatval($matches[4])) : 1;
 		return [
-			intval($matches[1]),
-			intval($matches[2]),
-			intval($matches[3]),
+			intval(floatval($matches[1])),
+			intval(floatval($matches[2])),
+			intval(floatval($matches[3])),
 			$alpha
 		];
-	} elseif (preg_match('/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/', $color, $matches)) {
+	} elseif (preg_match('/^rgb\(([\d.]+)(?:\s+|\s*,\s*)([\d.]+)(?:\s+|\s*,\s*)([\d.]+)\)$/', $color, $matches)) {
 		return [
-			intval($matches[1]),
-			intval($matches[2]),
-			intval($matches[3])
+			intval(floatval($matches[1])),
+			intval(floatval($matches[2])),
+			intval(floatval($matches[3]))
 		];
-	} elseif (preg_match('/^hsla?\(\s*(\d+)(?:\s+|\s*,\s*)(\d+)%(?:\s+|\s*,\s*)(\d+)%(?:\s*(?:\/|\s*,)\s*([\d.]+%?))?\s*\)$/', $color, $matches)) {
+	} elseif (preg_match('/^hsla?\(\s*([\d.]+)(?:\s+|\s*,\s*)(\d+)%(?:\s+|\s*,\s*)(\d+)%(?:\s*(?:\/|\s*,)\s*([\d.]+%?))?\s*\)$/', $color, $matches)) {
 	$alpha = isset($matches[4]) ? (str_ends_with($matches[4], '%') ? 
 			floatval(rtrim($matches[4], '%')) / 100 : 
 			floatval($matches[4])) : 1;
@@ -550,7 +556,7 @@ if (isset($_POST['download']) && !empty($_POST['colors'])) {
 	<head>
 		<meta charset="UTF-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<title>Color Contrast Report - <?= date('Y-m-d H:i:s') ?></title>
+		<title>Jeff's Color Contrast Analyzer Report - <?= date('Y-m-d H:i:s') ?></title>
 		<style>
 			body { font-family: Arial, sans-serif; margin: 20px; }
 			table { border-collapse: collapse; margin: 20px 0; }
@@ -717,11 +723,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['colors'])) {
 	}
 	
 	foreach ($colors as $original_color) {
-		$rgb = parseColor($original_color);
+		// Remove multiline and inline comments before checking if valid
+		$clean_color = preg_replace('/\/\*.*?\*\//s', '', $original_color);
+		$clean_color = preg_replace('/\/\/[^;\n]*[;\n]/', '', $clean_color);
+		$clean_color = trim($clean_color);
+		
+		// Skip empty lines after comment removal
+		if (empty($clean_color)) {
+			continue;
+		}
+		
+		$rgb = parseColor($clean_color);
 		if ($rgb !== false) {
 			$parsed_colors[$original_color] = [
-				'rgb' => array_slice($rgb, 0, 3), // First 3 elements for RGB
-				'alpha' => isset($rgb[3]) ? $rgb[3] : 1, // Get alpha if it exists
+				'rgb' => array_slice($rgb, 0, 3),
+				'alpha' => isset($rgb[3]) ? $rgb[3] : 1,
 				'luminance' => getLuminance(array_slice($rgb, 0, 3))
 			];
 		} else {
@@ -741,7 +757,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['colors'])) {
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>WCAG Color Contrast Analyzer</title>
+	<title>Jeff's Color Contrast Analyzer</title>
 	<style>
 		:root { color-scheme: light dark; }
 		body { font-family: Arial, sans-serif; margin: 20px; }
@@ -759,7 +775,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['colors'])) {
 	<form method="post">
 		<p>Enter up to 30 colors (one per line) in any of these formats:</p>
 		<ul>
-			<li><strong>Hex</strong>: #FFF, #FFFFFF, #FFFF (with alpha), #FFFFFFFF (with alpha)</li>
+			<li><strong>Hex</strong>: #FFF, #FFFFFF, #FFFA (with alpha), #FFFFFFAA (with alpha)</li>
 			<li><strong>RGB and RGBA</strong>: rgb(255, 255, 255) and rgba(255, 255, 255, 0.5)</li>
 			<li><strong>HSL and HSLA</strong>: hsl(360, 100%, 100%) and hsla(360, 100%, 100%, 0.5)</li>
 			<li>CSS <strong>Named Colors</strong>, like "black", "white", or "coral"</li>
