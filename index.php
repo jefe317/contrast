@@ -106,9 +106,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <body>
 	<h1>Jeff's Color Contrast Analyzer</h1>
 	<form method="post">
-		<details class="format-list" open>
+		<details class="format-list">
 		<p class="desktop">Enter up to 50 colors (one per line) in any of these formats:</p>
-		<summary>Enter up to 50 colors (one per line) in any of these formats:<span class="sr-only"> (click to expand)</span></summary>
+		<summary>Enter up to 50 colors (one per line) in any of these formats: (click to expand)</summary>
 		<ul>
 			<li><strong>Hex</strong>: #FFF, #FFFFFF, #FFFA (with alpha), #FFFFFFAA (with alpha)</li>
 			<li><strong>RGB and RGBA</strong>: rgb(255, 255, 255) and rgba(255, 255, 255, 0.5)</li>

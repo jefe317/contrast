@@ -87,7 +87,7 @@ function parseColor($color) {
 		];
 		return array_merge($rgb, [$alpha]);
 	} elseif (preg_match('/^hsla?\(\s*([\d.]+)(?:(?:\s+|\s*,\s*)|\s*,\s*)(\d+)%(?:\s+|\s*,\s*)(\d+)%(?:\s*(?:\/|\s*,)\s*([\d.]+%?))?\s*\)$/', $color, $matches)) {
-	$alpha = isset($matches[4]) ? (str_ends_with($matches[4], '%') ? 
+		$alpha = isset($matches[4]) ? (str_ends_with($matches[4], '%') ? 
 			floatval(rtrim($matches[4], '%')) / 100 : 
 			floatval($matches[4])) : 1;
 		$rgb = hslToRgb($matches[1], $matches[2], $matches[3]);
