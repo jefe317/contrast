@@ -82,6 +82,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 		.error-message h3 { margin-top: 0; }
 		li { line-height: 1.5; }
 		.footer { padding-top: 1em; }
+		.format-list { margin: 1em 0; }
+		.format-list summary { cursor: pointer; padding: 0.5em 0; }
+		.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); border: 0; }
+		@media (max-width: 768px) { 
+		 .format-list[open] { margin-bottom: 1.5em; }
+		 .format-list:not([open]) { margin-bottom: 1em; }
+		 .format-list { border: 1px solid #ccc; border-radius: 4px; padding: 0.5em; }
+		 .format-list[open] summary { margin-bottom: 0.5em; } 
+		 .desktop { display: none; }
+		}
+		@media (min-width: 769px) { 
+		 .format-list summary { display: none; }
+		 .desktop { display: inline; }
+		 .format-list { open: true; } 
+		}
 	</style>
 	<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
 	<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
@@ -91,7 +106,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <body>
 	<h1>Jeff's Color Contrast Analyzer</h1>
 	<form method="post">
-		<p>Enter up to 50 colors (one per line) in any of these formats:</p>
+		<details class="format-list" open>
+		<p class="desktop">Enter up to 50 colors (one per line) in any of these formats:</p>
+		<summary>Enter up to 50 colors (one per line) in any of these formats:<span class="sr-only"> (click to expand)</span></summary>
 		<ul>
 			<li><strong>Hex</strong>: #FFF, #FFFFFF, #FFFA (with alpha), #FFFFFFAA (with alpha)</li>
 			<li><strong>RGB and RGBA</strong>: rgb(255, 255, 255) and rgba(255, 255, 255, 0.5)</li>
@@ -106,6 +123,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 			<li>CSS syntax is also accepted (e.g., "color: #FFF;" or "background-color: rgb(255, 0, 0);")</li>
 			<li>Note: <code>from</code> and <code>calc()</code> are not supported.</li>
 		</ul>
+	</details>
 		<p>Labels can be added to a color by placing the label before a colon, like "link: #2C5491"</p>
 		<textarea name="colors" required><?= isset($_POST['colors']) ? htmlspecialchars($_POST['colors']) : '' ?></textarea>
 		<br><br>
