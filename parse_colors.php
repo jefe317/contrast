@@ -104,13 +104,27 @@ function parseColor($color) {
 			floatval($matches[2]),
 			floatval($matches[3])
 		);
-	} elseif (preg_match('/^hwb\(\s*(\d+)\s+(\d+)%\s+(\d+)%(?:\s*\/\s*([\d.]+))?\s*\)$/', $color, $matches)) {
-		$rgb = hwbToRgb(
-			floatval($matches[1]), 
-			floatval($matches[2]), 
-			floatval($matches[3])
-		);
-		return array_merge($rgb, [isset($matches[4]) ? floatval($matches[4]) : 1]);
+	} elseif (preg_match('/^hwb\(\s*([\d.]+)(deg|turn)?\s+(\d+(?:\.\d+)?%)\s+(\d+(?:\.\d+)?%)(?:\s*(?:\/|,)\s*([\d.]+%?))?\s*\)$/', $color, $matches)) {
+		// Convert turn to degrees if specified
+		$hue = floatval($matches[1]);
+		if (isset($matches[2]) && $matches[2] === 'turn') {
+			$hue *= 360;
+		}
+		
+		// Extract whiteness and blackness percentages
+		$whiteness = floatval(rtrim($matches[3], '%'));
+		$blackness = floatval(rtrim($matches[4], '%'));
+		
+		// Handle alpha value
+		$alpha = 1;
+		if (isset($matches[5])) {
+			$alpha = str_ends_with($matches[5], '%') ? 
+				floatval(rtrim($matches[5], '%')) / 100 : 
+				floatval($matches[5]);
+		}
+		
+		$rgb = hwbToRgb($hue, $whiteness, $blackness);
+		return array_merge($rgb, [$alpha]);
 	} elseif (preg_match('/^lch\(\s*(\d*\.?\d+)%?\s+(\d*\.?\d+)\s+(\d*\.?\d+)(?:\s*\/\s*([\d.]+))?\s*\)$/', $color, $matches)) {
 		// Extract values
 		$lightness = floatval($matches[1]);

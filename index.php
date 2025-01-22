@@ -128,8 +128,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 			<li><strong>RGB and RGBA</strong>: rgb(255, 255, 255) and rgba(255, 255, 255, 0.5)</li>
 			<li><strong>HSL and HSLA</strong>: hsl(360, 100%, 100%) and hsla(360, 100%, 100%, 0.5)</li>
 			<li>CSS <strong>Named Colors</strong>, like "black", "white", or "coral"</li>
-			<li><strong>Lab</strong>: lab(75.5, 20.3, -15.6) and lab(50% 40 59.5 / 0.5)</li>
 			<li><strong>HSB and HSV</strong>: hsb(240, 100%, 100%) and hsb(120, 50, 75)</li>
+			<li><strong>HWB</strong>: hwb(12 50% 0%) and hwb(0 100% 0% / 50%);</li>
+			<li><strong>Lab</strong>: lab(80% 100 50) and lab(50% 40 59.5 / 0.5)</li>
 			<li><strong>LCH</strong>: lch(50% 70 200) and lch(52.2345% 72.2 56.2 / .5)</li>
 			<li><strong>Oklab</strong>: oklab(59% 0.1 0.1) and oklab(59% 0.1 0.1 / 0.5)</li>
 			<li><strong>Oklch</strong>: oklch(60% 0.15 50) and oklch(60% 0.15 50 / 0.5)</li>
