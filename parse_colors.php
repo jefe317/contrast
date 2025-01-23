@@ -24,7 +24,7 @@ function parseColor($color) {
 	}
 	
 	// Strip any remaining CSS syntax or semicolons
-	$color = preg_replace('/;.*/', '', $color);    // Remove semicolon and anything after
+	$color = preg_replace('/;+.*/', '', $color);   // Remove multiple semicolons and anything after
 	$color = preg_replace('/}.*/', '', $color);    // Remove closing brace and anything after
 	$color = strtolower(trim($color));             // Normalize to lowercase
 	

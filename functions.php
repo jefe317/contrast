@@ -22,6 +22,30 @@ function hslToRgb($h, $s, $l) {
 	];
 }
 
+function validateRgb($r, $g, $b) {
+    return $r >= 0 && $r <= 255 && 
+           $g >= 0 && $g <= 255 && 
+           $b >= 0 && $b <= 255;
+}
+
+function validateHsl($h, $s, $l) {
+    return $h >= 0 && $h <= 360 && 
+           $s >= 0 && $s <= 100 && 
+           $l >= 0 && $l <= 100;
+}
+
+function validateLch($l, $c, $h) {
+    return $l >= 0 && $l <= 100 && 
+           $c >= 0 && 
+           $h >= 0 && $h <= 360;
+}
+
+function roundColorValues($values) {
+    return array_map(function($value) {
+        return is_float($value) ? round($value, 4) : $value;
+    }, $values);
+}
+
 function lchToRgb($l, $c, $h, $alpha = 1) {
 	$a = $c * cos(deg2rad($h));
 	$b = $c * sin(deg2rad($h));

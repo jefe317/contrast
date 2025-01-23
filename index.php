@@ -83,19 +83,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 		li { line-height: 1.5; }
 		.footer { padding-top: 1em; }
 		.format-list { margin: 1em 0; }
-		.format-list summary { cursor: pointer; padding: 0.5em 0; }
-		.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); border: 0; }
-		@media (max-width: 768px) { 
-		 .format-list[open] { margin-bottom: 1.5em; }
-		 .format-list:not([open]) { margin-bottom: 1em; }
-		 .format-list { border: 1px solid #ccc; border-radius: 4px; padding: 0.5em; }
-		 .format-list[open] summary { margin-bottom: 0.5em; } 
-		 .desktop { display: none; }
-		}
-		@media (min-width: 769px) { 
-		 .format-list summary { display: none; }
-		 .desktop { display: block; }
-		 .format-list { open: true; } 
+		
+		/* Mobile-first styles */
+		.format-list-wrapper { position: relative; }
+		.format-list-title, .format-toggle { display: none; }
+		.format-toggle-label { cursor: pointer; padding: 0.5em; border: 1px solid #ccc; border-radius: 4px; display: block; margin-bottom: 0.5em; }
+		.format-toggle-label::after { content: "Enter up to 50 colors (one per line) in any of these formats: (click to expand)"; }
+		.format-list { display: none; border: 1px solid #ccc; border-radius: 4px; margin-bottom: 1.5em; }
+		.format-toggle:checked ~ .format-list { display: block; }
+		/* Desktop styles */
+		@media (min-width: 769px) {
+			.format-list-title { display: block; }
+			.format-toggle-label { display: none; }
+			.format-list { display: block; border: none; margin-bottom: 1em; }
 		}
 	</style>
 	<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
@@ -106,39 +106,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <body>
 	<h1>Jeff's Color Contrast Analyzer</h1>
 	<form method="post">
-		<p class="desktop">Enter up to 50 colors (one per line) in any of these formats:</p>
-		<ul class="desktop">
-			<li><strong>Hex</strong>: #FFF, #FFFFFF, #FFFA (with alpha), #FFFFFFAA (with alpha)</li>
-			<li><strong>RGB and RGBA</strong>: rgb(255, 255, 255) and rgba(255, 255, 255, 0.5)</li>
-			<li><strong>HSL and HSLA</strong>: hsl(360, 100%, 100%) and hsla(360, 100%, 100%, 0.5)</li>
-			<li>CSS <strong>Named Colors</strong>, like "black", "white", or "coral"</li>
-			<li><strong>Lab</strong>: lab(75.5, 20.3, -15.6) and lab(50% 40 59.5 / 0.5)</li>
-			<li><strong>HSB and HSV</strong>: hsb(240, 100%, 100%) and hsb(120, 50, 75)</li>
-			<li><strong>LCH</strong>: lch(50% 70 200) and lch(52.2345% 72.2 56.2 / .5)</li>
-			<li><strong>Oklab</strong>: oklab(59% 0.1 0.1) and oklab(59% 0.1 0.1 / 0.5)</li>
-			<li><strong>Oklch</strong>: oklch(60% 0.15 50) and oklch(60% 0.15 50 / 0.5)</li>
-			<li><strong>CMYK</strong>: cmyk(100%, 0%, 0%, 0%) and cmyk(0, 100, 100, 0)</li>
-			<li>CSS syntax is also accepted (e.g., "color: #FFF;" or "background-color: rgb(255, 0, 0);")</li>
-			<li>Note: <code>from</code> and <code>calc()</code> are not supported.</li>
-		</ul>
-		<details class="format-list">
-		<summary>Enter up to 50 colors (one per line) in any of these formats: (click to expand)</summary>
-		<ul>
-			<li><strong>Hex</strong>: #FFF, #FFFFFF, #FFFA (with alpha), #FFFFFFAA (with alpha)</li>
-			<li><strong>RGB and RGBA</strong>: rgb(255, 255, 255) and rgba(255, 255, 255, 0.5)</li>
-			<li><strong>HSL and HSLA</strong>: hsl(360, 100%, 100%) and hsla(360, 100%, 100%, 0.5)</li>
-			<li>CSS <strong>Named Colors</strong>, like "black", "white", or "coral"</li>
-			<li><strong>HSB and HSV</strong>: hsb(240, 100%, 100%) and hsb(120, 50, 75)</li>
-			<li><strong>HWB</strong>: hwb(12 50% 0%) and hwb(0 100% 0% / 50%);</li>
-			<li><strong>Lab</strong>: lab(80% 100 50) and lab(50% 40 59.5 / 0.5)</li>
-			<li><strong>LCH</strong>: lch(50% 70 200) and lch(52.2345% 72.2 56.2 / .5)</li>
-			<li><strong>Oklab</strong>: oklab(59% 0.1 0.1) and oklab(59% 0.1 0.1 / 0.5)</li>
-			<li><strong>Oklch</strong>: oklch(60% 0.15 50) and oklch(60% 0.15 50 / 0.5)</li>
-			<li><strong>CMYK</strong>: cmyk(100%, 0%, 0%, 0%) and cmyk(0, 100, 100, 0)</li>
-			<li>CSS syntax is also accepted (e.g., "color: #FFF;" or "background-color: rgb(255, 0, 0);")</li>
-			<li>Note: <code>from</code> and <code>calc()</code> are not supported.</li>
-		</ul>
-	</details>
+		<div class="format-list-wrapper">
+			<p class="format-list-title">Enter up to 50 colors (one per line) in any of these formats:</p>
+			<input type="checkbox" id="format-toggle" class="format-toggle" aria-expanded="false" aria-controls="format-list">
+			<label for="format-toggle" class="format-toggle-label"></label>
+			<ul id="format-list" class="format-list">
+				<li><strong>Hex</strong>: #FFF, #FFFFFF, #FFFA (with alpha), #FFFFFFAA (with alpha)</li>
+				<li><strong>RGB and RGBA</strong>: rgb(255, 255, 255) and rgba(255, 255, 255, 0.5)</li>
+				<li><strong>HSL and HSLA</strong>: hsl(360, 100%, 100%) and hsla(360, 100%, 100%, 0.5)</li>
+				<li>CSS <strong>Named Colors</strong>, like "black", "white", or "coral"</li>
+				<li><strong>HSB and HSV</strong>: hsb(240, 100%, 100%) and hsb(120, 50, 75)</li>
+				<li><strong>HWB</strong>: hwb(12 50% 0%) and hwb(0 100% 0% / 50%);</li>
+				<li><strong>Lab</strong>: lab(80% 100 50) and lab(50% 40 59.5 / 0.5)</li>
+				<li><strong>LCH</strong>: lch(50% 70 200) and lch(52.2345% 72.2 56.2 / .5)</li>
+				<li><strong>Oklab</strong>: oklab(59% 0.1 0.1) and oklab(59% 0.1 0.1 / 0.5)</li>
+				<li><strong>Oklch</strong>: oklch(60% 0.15 50) and oklch(60% 0.15 50 / 0.5)</li>
+				<li><strong>CMYK</strong>: cmyk(100%, 0%, 0%, 0%) and cmyk(0, 100, 100, 0)</li>
+				<li>CSS syntax is also accepted (e.g., "color: #FFF;" or "background-color: rgb(255, 0, 0);")</li>
+				<li>Note: <code>from</code> and <code>calc()</code> are not supported.</li>
+			</ul>
+		</div>
 		<p>Labels can be added to a color by placing the label before a colon, like "link: #2C5491"</p>
 		<textarea name="colors" required><?= isset($_POST['colors']) ? htmlspecialchars($_POST['colors']) : '' ?></textarea>
 		<br><br>
