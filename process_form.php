@@ -2,13 +2,13 @@
 require_once 'functions.php';
 require_once 'parse_colors.php';
 
+define('MAX_COLORS', 50);
+
 function processColorForm($colors) {
 	$parsed_colors = [];
 	$invalid_colors = [];
-	
-	if (strlen($colors) > 1000) {
-		die("Input too large");
-	}
+	$duplicate_colors = [];
+	$excess_colors = false;
 	
 	// Split on newlines first
 	$cleaned_input = preg_split('/\n/', $colors);
@@ -23,17 +23,35 @@ function processColorForm($colors) {
 	$cleaned_input = array_map('trim', $cleaned_input);
 	$cleaned_input = array_filter($cleaned_input, 'strlen');
 	
+	// Check for duplicates after cleaning each color
+	$seen_colors = [];
+	$unique_colors = [];
+	foreach ($cleaned_input as $color) {
+		$clean_color = preg_replace('/\/\*.*?\*\//s', '', $color);
+		$clean_color = preg_replace('/\/\/[^;\n]*[;\n]/', '', $clean_color);
+		$clean_color = trim($clean_color);
+		
+		if (empty($clean_color)) continue;
+		
+		if (in_array($clean_color, $seen_colors)) {
+			$duplicate_colors[] = $color;
+		} else {
+			$seen_colors[] = $clean_color;
+			$unique_colors[] = $color;
+		}
+	}
+	
+	$cleaned_input = $unique_colors;
+	
+	// Check if we have excess colors
+	if (count($cleaned_input) > MAX_COLORS) {
+		$excess_colors = true;
+		$cleaned_input = array_slice($cleaned_input, 0, MAX_COLORS);
+	}
+	
 	$colors = array_map(function($color) {
 		return substr($color, 0, 50);
 	}, $cleaned_input);
-	$colors = array_slice($colors, 0, 50);
-	
-	if (count($colors) === 1) {
-		$test_color = parseColor($colors[0]);
-		if ($test_color !== false) {
-			array_push($colors, 'black', 'white');
-		}
-	}
 	
 	foreach ($colors as $original_color) {
 		$clean_color = preg_replace('/\/\*.*?\*\//s', '', $original_color);
@@ -56,9 +74,25 @@ function processColorForm($colors) {
 		}
 	}
 	
+	// Add black and white if only one valid color was parsed
+	if (count($parsed_colors) === 1) {
+		$parsed_colors['black'] = [
+			'rgb' => [0, 0, 0],
+			'alpha' => 1,
+			'luminance' => getLuminance([0, 0, 0])
+		];
+		$parsed_colors['white'] = [
+			'rgb' => [255, 255, 255],
+			'alpha' => 1,
+			'luminance' => getLuminance([255, 255, 255])
+		];
+	}
+	
 	return [
 		'parsed_colors' => $parsed_colors,
 		'invalid_colors' => $invalid_colors,
+		'duplicate_colors' => $duplicate_colors,
+		'excess_colors' => $excess_colors,
 		'original_input' => $colors
 	];
 }

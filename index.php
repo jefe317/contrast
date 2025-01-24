@@ -45,22 +45,24 @@ $invalid_colors = [];
 
 // Handle form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (isset($_POST['download']) && !empty($_POST['colors'])) {
-        $colors = $_POST['colors'];
-        $report = generateColorReport($colors);
-        
-        $timestamp = date('Ymd-His');
-        $filename = "color-contrast-report-{$timestamp}.html";
-        
-        header('Content-Type: text/html');
-        header('Content-Disposition: attachment; filename="' . $filename . '"');
-        
-        echo $report;
-        exit;
-    } elseif (!empty($_POST['colors'])) {
+	if (isset($_POST['download']) && !empty($_POST['colors'])) {
+		$colors = $_POST['colors'];
+		$report = generateColorReport($colors);
+		
+		$timestamp = date('Ymd-His');
+		$filename = "color-contrast-report-{$timestamp}.html";
+		
+		header('Content-Type: text/html');
+		header('Content-Disposition: attachment; filename="' . $filename . '"');
+		
+		echo $report;
+		exit;
+	} elseif (!empty($_POST['colors'])) {
 		$result = processColorForm($_POST['colors']);
 		$parsed_colors = $result['parsed_colors'];
+		$excess_colors = $result['excess_colors'];
 		$invalid_colors = $result['invalid_colors'];
+		$duplicate_colors = $result['duplicate_colors'];
 	}
 }
 ?>
@@ -78,7 +80,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 		td div { padding: 0 0.5em 0.5em 0; }
 		textarea { width: 100%; max-width: 400px; height: 200px; }
 		.checkered {background: conic-gradient(hsla(0, 0%, 50%, 20%) 90deg, transparent 90deg 180deg, hsla(0, 0%, 50%, 20%) 180deg 270deg, transparent 270deg); background-repeat: repeat; background-size: 40px 40px; }
-		.error-message { background-color: hsla(0 100% 63% / 0.5); border: 1px solid #f5c6cb; border-radius: 4px; padding: 12px; margin: 20px 0; width: fit-content;}
+		.error-message { background-color: hsla(0 100% 63% / 0.5); border: 1px solid #f5c6cb; border-radius: 4px; padding: 12px; margin: 20px 0; max-height: 30vh; overflow: scroll; display: inline-block;}
 		.error-message h3 { margin-top: 0; }
 		li { line-height: 1.5; }
 		.footer { padding-top: 1em; }
@@ -107,7 +109,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 	<h1>Jeff's Color Contrast Analyzer</h1>
 	<form method="post">
 		<div class="format-list-wrapper">
-			<p class="format-list-title">Enter up to 50 colors (one per line) in any of these formats:</p>
+			<p class="format-list-title">Enter up to <?php echo MAX_COLORS; ?> colors (one per line) in any of these formats:</p>
 			<input type="checkbox" id="format-toggle" class="format-toggle" aria-expanded="false" aria-controls="format-list">
 			<label for="format-toggle" class="format-toggle-label"></label>
 			<ul id="format-list" class="format-list">
@@ -136,7 +138,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 		<input type="hidden" name="colors" value="<?= htmlspecialchars($_POST['colors']) ?>">
 		<button type="submit" name="download" value="1">Download Report</button>
 	</form></div>
-<?php endif; 
+<?php endif;
+if (!empty($duplicate_colors)): ?>
+	<div class="error-message">
+		<h3>Duplicate Colors Found</h3>
+		<p>The following colors were entered more than once. Only the first occurrence was processed.</p>
+		<ul class="error-list">
+			<?php foreach ($duplicate_colors as $color): ?>
+			<li><code><?= htmlspecialchars($color) ?></code></li>
+			<?php endforeach; ?>
+		</ul>
+	</div>
+<?php endif;
+if (!empty($excess_colors)): ?>
+	<div class="error-message">
+		<h3>Too Many Colors</h3>
+		<p>Only the first <?php echo MAX_COLORS; ?> colors were processed. Please reduce the number of colors in your input.</p>
+	</div>
+<?php endif;
 if (!empty($invalid_colors)): ?>
 	<div class="error-message">
 		<h3>Invalid Colors Detected</h3>
