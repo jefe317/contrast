@@ -63,6 +63,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 		$excess_colors = $result['excess_colors'];
 		$invalid_colors = $result['invalid_colors'];
 		$duplicate_colors = $result['duplicate_colors'];
+		$semantic_duplicates = $result['semantic_duplicates'];
 	}
 }
 ?>
@@ -80,7 +81,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 		td div { padding: 0 0.5em 0.5em 0; }
 		textarea { width: 100%; max-width: 400px; height: 200px; }
 		.checkered {background: conic-gradient(hsla(0, 0%, 50%, 20%) 90deg, transparent 90deg 180deg, hsla(0, 0%, 50%, 20%) 180deg 270deg, transparent 270deg); background-repeat: repeat; background-size: 40px 40px; }
-		.error-message { background-color: hsla(0 100% 63% / 0.5); border: 1px solid #f5c6cb; border-radius: 4px; padding: 12px; margin: 20px 0; max-height: 30vh; overflow: scroll; display: inline-block;}
+		.warning-message, .error-message { border-radius: 4px; padding: 12px; margin: 20px 0; max-height: 30vh; overflow: scroll; display: inline-block; }
+		.warning-message { background-color: hsla(28 100% 63% / 0.5); border: 1px solid hsla(28 100% 80% / 0.6); }
+		.error-message { background-color: hsla(0 100% 63% / 0.5); border: 1px solid hsla(0 100% 80% / 0.6); }
 		.error-message h3 { margin-top: 0; }
 		li { line-height: 1.5; }
 		.footer { padding-top: 1em; }
@@ -166,6 +169,26 @@ if (!empty($invalid_colors)): ?>
 			<?php endforeach; ?>
 		</ul>
 	</div>
+<?php endif;
+if (!empty($semantic_duplicates)): ?>
+    <div class="warning-message">
+        <h3>Equivalent Colors Found</h3>
+        <p>The following colors represent the same values in different formats. Only the first occurrence was processed.</p>
+        <ul class="warning-list">
+            <?php foreach ($semantic_duplicates as $group): ?>
+                <li>
+                    Original: <code><?= htmlspecialchars($group['original']) ?></code>
+                    <br>
+                    Equivalent formats:
+                    <ul>
+                        <?php foreach ($group['duplicates'] as $duplicate): ?>
+                            <li><code><?= htmlspecialchars($duplicate) ?></code></li>
+                        <?php endforeach; ?>
+                    </ul>
+                </li>
+            <?php endforeach; ?>
+        </ul>
+    </div>
 <?php endif;
 if (!empty($parsed_colors)): ?>
 	<h2>Summary of Compatible Color Combinations</h2>
