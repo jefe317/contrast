@@ -84,10 +84,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 		.warning-message, .error-message { border-radius: 4px; padding: 12px; margin: 20px 0; max-height: 30vh; overflow: scroll; display: inline-block; }
 		.warning-message { background-color: hsla(28 100% 63% / 0.5); border: 1px solid hsla(28 100% 80% / 0.6); }
 		.error-message { background-color: hsla(0 100% 63% / 0.5); border: 1px solid hsla(0 100% 80% / 0.6); }
-		.error-message h3 { margin-top: 0; }
+		.error-message h3, .warning-message h3 { margin-top: 0; }
 		li { line-height: 1.5; }
 		.footer { padding-top: 1em; }
 		.format-list { margin: 1em 0; }
+		.warning-list { margin: 0; }
 		
 		/* Mobile-first styles */
 		.format-list-wrapper { position: relative; }
@@ -255,7 +256,7 @@ if (!empty($parsed_colors)): ?>
 		<?php if ($has_valid_combinations): ?>
 			<?php foreach (['AAA', 'AA', 'AA Large'] as $level): ?>
 				<td><?php foreach ($wcag_groups[$level] as $combo): ?>
-					<div style="color: <?= htmlspecialchars(getCssColor($combo['color'])) ?>;"><?= htmlspecialchars($combo['color']) ?>(Ratio: <?= number_format($combo['contrast'], 2) ?>)</div>
+					<div style="color: <?= htmlspecialchars(getCssColor($combo['color'])) ?>;"><?= htmlspecialchars($combo['color']) ?> (Ratio: <?= number_format($combo['contrast'], 2) ?>)</div>
 				<?php endforeach; ?></td>
 			<?php endforeach; ?>
 			<?php else: ?>
