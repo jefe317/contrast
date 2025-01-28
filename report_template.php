@@ -20,8 +20,8 @@ if (!isset($parsed_colors)) {
 	</style>
 </head>
 <body>
-	<h1>Color Contrast Report</h1>
-	<p>Generated on: <?= date('Y-m-d H:i:s T') ?></p>
+	<h1>Jeff's Color Contrast Analyzer</h1>
+	<p>Generated on: <?= date('Y-m-d H:i:s T') ?> from <a href="https://contrast.jefftml.com/">contrast.jefftml.com</a></p>
 	
 	<?php if (!empty($parsed_colors)): ?>
 		<h2>Summary of Compatible Color Combinations</h2>
