@@ -1,4 +1,5 @@
 <?php
+// report_template.php
 // This template expects $parsed_colors to be available from the calling context
 if (!isset($parsed_colors)) {
 	die('Error: No color data provided');

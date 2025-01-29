@@ -1,4 +1,5 @@
 <?php
+// parse_colors.php
 require_once 'functions.php';
 
 function parseColor($color) {

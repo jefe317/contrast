@@ -1,4 +1,5 @@
 <?php
+// functions.php
 function hslToRgb($h, $s, $l) {
 	$h /= 360;
 	$s /= 100;

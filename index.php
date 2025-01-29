@@ -151,18 +151,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 		<button type="submit" name="download" value="1">Download Report</button>
 	</form></div>
 <?php endif;
-if (!empty($duplicate_colors)): ?>
-	<div class="error-message">
-		<h3>Duplicate Colors Found</h3>
-		<p>The following colors were entered more than once. Only the first occurrence was processed.</p>
-		<ul class="error-list">
-			<?php foreach ($duplicate_colors as $color): ?>
-			<li><code><?= htmlspecialchars($color) ?></code></li>
-			<?php endforeach; ?>
-		</ul>
-	</div>
-	<br>
-<?php endif;
 if (!empty($excess_colors)): ?>
 	<div class="error-message">
 		<h3>Too Many Colors</h3>
@@ -172,8 +160,8 @@ if (!empty($excess_colors)): ?>
 <?php endif;
 if (!empty($invalid_colors)): ?>
 	<div class="error-message">
-		<h3>Invalid Colors Detected</h3>
-		<p>The following colors could not be parsed:</p>
+		<h3>Invalid Colors</h3>
+		<p>The following colors could not be parsed.</p>
 		<ul class="error-list">
 			<?php foreach ($invalid_colors as $color): ?>
 			<li><code><?= htmlspecialchars($color) ?></code></li>
@@ -182,9 +170,21 @@ if (!empty($invalid_colors)): ?>
 	</div>
 	<br>
 <?php endif;
+if (!empty($duplicate_colors)): ?>
+	<div class="warning-message">
+		<h3>Duplicate Colors</h3>
+		<p>The following colors were entered more than once. Only the first occurrence was processed.</p>
+		<ul class="error-list">
+			<?php foreach ($duplicate_colors as $color): ?>
+			<li><code><?= htmlspecialchars($color) ?></code></li>
+			<?php endforeach; ?>
+		</ul>
+	</div>
+	<br>
+<?php endif;
 if (!empty($semantic_duplicates)): ?>
 	<div class="warning-message">
-		<h3>Equivalent Colors Found</h3>
+		<h3>Equivalent Colors</h3>
 		<p>The following colors represent the same values in different formats. Only the first occurrence was processed.</p>
 		<ul class="warning-list">
 			<?php foreach ($semantic_duplicates as $group): ?>
