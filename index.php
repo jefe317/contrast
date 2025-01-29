@@ -67,11 +67,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 		$invalid_colors = $result['invalid_colors'];
 		$duplicate_colors = $result['duplicate_colors'];
 		$semantic_duplicates = $result['semantic_duplicates'];
-
-		// debug
-		error_log('Invalid colors: ' . print_r($invalid_colors, true));
-	    error_log('POST colors: ' . print_r($_POST['colors'], true));
-	    error_log('Result: ' . print_r($result, true));
 	}
 }
 ?>
