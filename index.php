@@ -1,9 +1,12 @@
 <?php
+// index.php
 $start = hrtime(true);
 date_default_timezone_set('America/Chicago');
 
 // Security headers and settings
-ini_set('display_errors', 0);
+ini_set('display_errors', '1');
+ini_set('display_startup_errors', '1');
+error_reporting(E_ALL);
 ini_set('session.cookie_httponly', 1);
 ini_set('session.cookie_secure', 1);
 ini_set('session.cookie_samesite', 'Strict');
@@ -64,6 +67,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 		$invalid_colors = $result['invalid_colors'];
 		$duplicate_colors = $result['duplicate_colors'];
 		$semantic_duplicates = $result['semantic_duplicates'];
+
+		// debug
+		error_log('Invalid colors: ' . print_r($invalid_colors, true));
+	    error_log('POST colors: ' . print_r($_POST['colors'], true));
+	    error_log('Result: ' . print_r($result, true));
 	}
 }
 ?>
@@ -153,12 +161,14 @@ if (!empty($duplicate_colors)): ?>
 			<?php endforeach; ?>
 		</ul>
 	</div>
+	<br>
 <?php endif;
 if (!empty($excess_colors)): ?>
 	<div class="error-message">
 		<h3>Too Many Colors</h3>
 		<p>Only the first <?php echo MAX_COLORS; ?> colors were processed. Please reduce the number of colors in your input.</p>
 	</div>
+	<br>
 <?php endif;
 if (!empty($invalid_colors)): ?>
 	<div class="error-message">
@@ -170,6 +180,7 @@ if (!empty($invalid_colors)): ?>
 			<?php endforeach; ?>
 		</ul>
 	</div>
+	<br>
 <?php endif;
 if (!empty($semantic_duplicates)): ?>
 	<div class="warning-message">
@@ -190,6 +201,7 @@ if (!empty($semantic_duplicates)): ?>
 			<?php endforeach; ?>
 		</ul>
 	</div>
+	<br>
 <?php endif;
 if (!empty($parsed_colors)): ?>
 	<h2>Summary of Compatible Color Combinations</h2>

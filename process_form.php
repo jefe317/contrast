@@ -1,4 +1,5 @@
 <?php
+// process_form.php
 require_once 'functions.php';
 require_once 'parse_colors.php';
 
@@ -54,6 +55,8 @@ function processColorForm($colors) {
 				$seen_rgb_values[$rgb_key] = $clean_color;
 				$unique_colors[] = $color;
 			}
+		} else {
+			$invalid_colors[] = $color;
 		}
 	}
 	
@@ -87,8 +90,6 @@ function processColorForm($colors) {
 			if ($rgb_values == [0, 0, 0] && (isset($rgb[3]) ? $rgb[3] : 1) == 1) {
 				$has_black = true;
 			}
-		} else {
-			$invalid_colors[] = $color;
 		}
 	}
 	
