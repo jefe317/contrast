@@ -1,0 +1,16 @@
+magenta-pink: #f4d
+blue: #2b85c9
+semi-transparent pink: #f3d8
+semi-transparent green: #16ae74cc
+green: rgb(45, 167, 98)
+semi-transparent purple: rgba(189, 83, 156, 0.75)
+orange: hsl(28, 85%, 64%)
+semi-transparent violet: hsla(276, 67%, 45%, 0.8)
+reddish-orange: coral
+light blue: hsb(195, 78%, 89%)
+muted green: hwb(147 18% 35%)
+sage green: lab(67 -23 19)
+vivid blue: lch(54 78 156)
+muted cyan: oklab(67% 0.1 -0.1)
+pastel yellow: oklch(82% 0.13 78)
+dark teal: cmyk(65%, 13%, 0%, 47%)
