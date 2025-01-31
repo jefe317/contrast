@@ -84,7 +84,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 		td div { padding: 0 0.5em 0.5em 0; }
 		textarea { width: 100%; max-width: 400px; height: 200px; }
 		.checkered {background: conic-gradient(hsla(0, 0%, 50%, 20%) 90deg, transparent 90deg 180deg, hsla(0, 0%, 50%, 20%) 180deg 270deg, transparent 270deg); background-repeat: repeat; background-size: 40px 40px; }
-		.warning-message, .error-message { border-radius: 4px; padding: 12px; margin: 20px 0 0 0; max-height: 30vh; overflow: scroll; display: inline-block; }
+		.warning-message, .error-message { border-radius: 4px; padding: 12px; margin: 20px 0 0 0; max-height: 30vh; overflow: scroll; display: inline-block; max-width: calc(100% - 30px); }
 		.warning-message { background-color: hsla(28 100% 63% / 0.5); border: 1px solid hsla(28 100% 80% / 0.6); }
 		.error-message { background-color: hsla(0 100% 63% / 0.5); border: 1px solid hsla(0 100% 80% / 0.6); }
 		.error-message h3, .warning-message h3 { margin-top: 0; }
@@ -113,7 +113,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 	<link rel="manifest" href="/site.webmanifest">
 </head>
 <body>
-	<h1>Jeff's Color Contrast Analyzer</h1>
+	<h1>Jeff&rsquo;s Color Contrast Analyzer</h1>
 	<form method="post">
 		<div class="format-list-wrapper">
 			<p class="format-list-title">Enter up to <?php echo MAX_COLORS; ?> colors (one per line) in any of these formats:</p>
@@ -187,11 +187,9 @@ if (!empty($semantic_duplicates)): ?>
 					Original: <code><?= htmlspecialchars($group['original']) ?></code>
 					<br>
 					Equivalent formats:
-					<ul>
-						<?php foreach ($group['duplicates'] as $duplicate): ?>
-							<li><code><?= htmlspecialchars($duplicate) ?></code></li>
-						<?php endforeach; ?>
-					</ul>
+						<?= implode(', ', array_map(function($duplicate) {
+							return '<code>' . htmlspecialchars($duplicate) . '</code>';
+						}, $group['duplicates'])) ?>
 				</li>
 			<?php endforeach; ?>
 		</ul>

@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+	<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Help Documentation - Jeff's Color Contrast Analyzer</title>
+	<style>
+		:root {
+			color-scheme: light dark;
+			--primary-color: #06d;
+			--border-color: #ddd;
+			--code-bg: #f5f5f5;
+		}
+		
+		body {
+			font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+			line-height: 1.6;
+			max-width: 800px;
+			margin: 0 auto;
+			padding: 2rem;
+		}
+		@media (prefers-color-scheme: dark) {
+			:root {
+				--primary-color: #6bf;
+				--border-color: #444;
+				--code-bg: #333;
+			}
+		}
+		h1, h2, h3 {
+			color: var(--primary-color);
+		}
+		h1 {
+			border-bottom: 2px solid var(--primary-color);
+			padding-bottom: 0.5em;
+		}
+		.toc h2 {
+			margin-top: 0;
+		}
+		code {
+			background: var(--code-bg);
+			padding: 0.2em 0.4em;
+			border-radius: 3px;
+			font-family: 'Monaco', 'Consolas', monospace;
+		}
+		.example-box {
+			border: 1px solid var(--border-color);
+			border-radius: 5px;
+			padding: 1em;
+			margin: 1em 0;
+		}
+		.warning {
+			background-color: #fff3cd;
+			border: 1px solid #ffeeba;
+			padding: 1em;
+			margin: 1em 0;
+			border-radius: 5px;
+		}
+		section {
+			border-top: 3px solid var(--primary-color);
+			margin-top: 3em;
+		}
+		@media (prefers-color-scheme: dark) {
+			.warning {
+				background-color: #2c2a1c;
+				border-color: #666033;
+			}
+		}
+		table {
+			border-collapse: collapse;
+			width: 100%;
+			margin: 1em 0;
+		}
+		th, td {
+			border: 1px solid var(--border-color);
+			padding: 0.5em;
+			text-align: left;
+		}
+		th {
+			background-color: var(--code-bg);
+		}
+		.color-format {
+			margin-bottom: 2em;
+		}
+		.toc {
+			background-color: var(--code-bg);
+			padding: 1em;
+			border-radius: 5px;
+			margin: 2em 0;
+		}
+		.toc ul {
+			list-style-type: none;
+			padding-left: 1em;
+		}
+		li {
+			margin: 0.5em 0;
+		}
+		.feature-grid {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+			gap: 1rem;
+			margin: 2em 0;
+		}
+		.feature-card {
+			border: 1px solid var(--border-color);
+			border-radius: 5px;
+			padding: 1em;
+		}
+	</style>
+</head>
+<body>
+	<h1>Help Documentation - Jeff&rsquo;s Color Contrast Analyzer</h1>
+	<div class="toc">
+		<h2>Table of Contents</h2>
+		<ul>
+			<li><a href="#overview">How to Use and Interpret the Results</a></li>
+			<li><a href="#features">Extra Features</a></li>
+			<li><a href="#color-formats">Color Types Supported</a></li>
+			<li><a href="#export">Exporting Results</a></li>
+			<li><a href="#error">Error Messages</a></li>
+			<li><a href="#additional-resources">Additional Resources</a></li>
+		</ul>
+	</div>
+	<section id="overview">
+		<h2>How to Use and Interpret the Results</h2>
+		<ul>
+			<li>After you enter the color values you want to analyze and click “Calculate Contrast”, you’ll see 2 tables appear.</li>
+			<li>The first table is rows of background colors and columns of foreground colors with the background color for that row on the first, leftmost column. The second column from left is “AAA” results, which will have the highest contrast ratio for that background color row. The third column “AA Normal” has the second most contrast ratio, and the rightmost column has the smallest passing contrast ratio. Failing color combinations are not shown in the summary table. The name of each color and the contrast ratio is in the color supplied so you can see the contrast in the table cells.</li>
+			<li>The second table is every color that was entered in both rows and columns. Background colors are the rows, foreground colors are the columns. In each table cell, “Sample” text is followed by the contrast ratio, and the last part is the WCAG contrast category. If the contrast ratio is below 3.0, the result will say “Fail”.</li>
+			<li>These 3 categories and the Failing result are defined by the <a href="https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html">W3C WCAG</a>. More contrast is not always needed, so keep that in mind when interpreting results.</li>
+			<li>The background of the table is a checkerboard pattern to help show transparent colors. Transparent text over a solid background is calculated after mixing the two colors together. The WCAG does not factor transparency into their recommendations, however this tool does calculate this and you will notice lower contrast ratios with a transparent color compared to a similar opaque color.</li>
+		</ul>
+	</section>
+	<section id="features">
+		<h2>Extra Features</h2>
+		<ul>
+			<li>If only one color is input, black and white are automatically added so you have something to compare your one color to.</li>
+			<li>You can add labels in front of any color like <code>labelname: #ff0;</code>.</li>
+		</ul>
+	</section>
+	<section id="color-formats">
+		<h2>Color Types Supported</h2>
+		<ul>
+			<li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/hex-color">Hex</a></li>
+			<li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/color_value/rgb">RGB and RGBA</a></li>
+			<li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/color_value/hsl">HSL and HSLA</a></li>
+			<li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/named-color">CSS Named Colors</a>, like "black", "white", or "coral"</li>
+			<li>HSB (This isn't a valid CSS syntax, but I included it anyways.)</li>
+			<li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/color_value/hwb">HWB</a></li>
+			<li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/color_value/lab">Lab</a></li>
+			<li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/color_value/lch">LCH</a></li>
+			<li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/color_value/oklab">Oklab</a></li>
+			<li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/color_value/oklch">Oklch</a></li>
+			<li>CMYK (This isn't a valid CSS syntax, but I included it anyways.)</li>
+			<li>Note: Relative values (from and calc) are not supported. Sorry, it’s too much math for me.</li>
+		</ul>
+	</section>
+	<section id="export">
+		<h2>Exporting Results</h2>
+		<ul>
+			<li>After entering colors and clicking “Calculate Contrast”, a “Download Report” button will appear below the “Calculate Contrast” button. Clicking the “Download Report” will download a HTML file with your results. Just the summary and complete contrast tables are included in the downloaded file. The current timestamp is included in the filename.</li>
+			<li>If a HTML file is not automatically downloaded, you might see the report in a new browser window. You can save this as a file on your device.</li>
+		</ul>
+	</section>
+	<section id="error">
+		<h2>Error Messages</h2>
+		<ul>
+			<li>Too many colors
+				<ul>
+					<li>There is a limit of 50 colors to prevent really long results and processing time.</li>
+				</ul>
+			</li>
+			<li>Duplicate colors
+				<ul>
+					<li>If you enter the exact same color the exact same way multiple times, only the first entry will be calculated.</li>
+				</ul>
+			</li>
+			<li>Equivalent colors
+				<ul>
+					<li>Similar to the "Duplicate colors" warning, if you enter the same color in a different way, like <code>red</code> and <code>#ff0000</code>, only the first entry will be calculated. Since color conversions need to happen behind the scenes, it doesn't detect every equivalent color. This is done on purpose so that if you have 2 very similar colors, it doesn't ignore the two distinct colors.</li>
+				</ul>
+			</li>
+			<li>Unknown color
+				<ul>
+					<li>If the code doesn't recognize your input, I don't know what you expect to happen. Refer to the examples at the top of the main page for syntax that is supported.</li>
+				</ul>
+			</li>
+		</ul>
+	</section>
+	<section id="additional-resources">
+		<h2>Additional Resources</h2>
+		<ul>
+			<li><a href="https://www.w3.org/TR/WCAG21/#contrast-enhanced">https://www.w3.org/TR/WCAG21/#contrast-enhanced</a></li>
+			<li><a href="https://www.w3.org/WAI/WCAG21/Understanding/contrast-enhanced.html">https://www.w3.org/WAI/WCAG21/Understanding/contrast-enhanced.html</a></li>
+		</ul>
+	</section>
+</body>
+</html>
