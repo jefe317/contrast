@@ -242,9 +242,17 @@ li {
 }
 .timer {
 	font-size: 0.8em;
-	color: rgba(150, 150, 150, 0.5);
+	color: hsla(0, 0%, 50%, 0.5);
 	padding-top: 2em;
 }
 .timer:hover {
 	color: unset;
+}
+
+/* help documentation */
+code {
+	background: hsla(0, 0%, 50%, 0.5);
+	padding: 0.2em 0.4em;
+	border-radius: 3px;
+	font-family: 'Monaco', 'Consolas', monospace;
 }
