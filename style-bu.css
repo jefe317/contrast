@@ -1,11 +1,11 @@
-:root {
+/*:root {
 	color-scheme: light dark;
 }
 body {
 	font-family: Arial, sans-serif;
 	margin: 20px;
-}
-table {
+}*/
+/*table {
 	border-collapse: collapse;
 	margin: 20px 0;
 }
@@ -62,10 +62,10 @@ li {
 }
 .warning-list {
 	margin: 0;
-}
+}*/
 
 /* Mobile-first styles */
-.format-list-wrapper {
+/*.format-list-wrapper {
 	position: relative;
 }
 .format-list-title,
@@ -91,9 +91,9 @@ li {
 }
 .format-toggle:checked ~ .format-list {
 	display: block;
-}
+}*/
 /* Desktop styles */
-@media (min-width: 800px) {
+/*@media (min-width: 800px) {
 	.format-list-title {
 		display: block;
 	}
@@ -105,9 +105,9 @@ li {
 		border: none;
 		margin-bottom: 1em;
 	}
-}
+}*/
 /* Brand Colors */
-:root {
+/*:root {
 	--primary-100: hsl(190, 85%, 97%);
 	--primary-200: hsl(190, 82%, 94%);
 	--primary-300: hsl(190, 80%, 89%);
@@ -118,7 +118,7 @@ li {
 	--text-primary: hsl(190, 15%, 15%);
 	--text-secondary: hsl(190, 10%, 30%);
 	/* dark mode colors */
-	--dm-primary-100: hsl(190, 15%, 10%);
+	/*--dm-primary-100: hsl(190, 15%, 10%);
 	--dm-primary-200: hsl(190, 12%, 15%);
 	--dm-primary-300: hsl(190, 10%, 20%);
 	--dm-primary-400: hsl(190, 15%, 35%);
@@ -126,18 +126,18 @@ li {
 	--dm-primary-600: hsl(190, 75%, 60%);
 	--dm-primary-700: hsl(190, 80%, 70%);
 	--dm-text-primary: hsl(190, 15%, 95%);
-	--dm-text-secondary: hsl(190, 10%, 80%);
-}
+	--dm-text-secondary: hsl(190, 10%, 80%);*/
+/*}*/
 
 /* Defaults and Layout */
-body {
+/*body {
 	margin: 0;
 	line-height: 1.5;
 	font-size: 18px;
 	font-family: sans-serif;
 	color: var(--text-primary);
-}
-.content {
+}*/
+/*.content {
 	margin: 40px auto;
 	max-width: 625px;
 	padding: 0 10px;
@@ -153,10 +153,10 @@ a {
 a:hover {
 	color: var(--primary-700);
 	background-color: var(--primary-200);
-}
+}*/
 
 /* Menu */
-.menu-toggle {
+/*.menu-toggle {
 	display: none;
 }
 .menu-label {
@@ -213,10 +213,10 @@ ul.topnav li.right {
 		width: 100%;
 		text-align: center;
 	}
-}
+}*/
 
 /* Dark Mode Colors */
-@media (prefers-color-scheme: dark) {
+/*@media (prefers-color-scheme: dark) {
 	body {
 		color: var(--dm-text-primary);
 	}
@@ -243,4 +243,4 @@ ul.topnav li.right {
 	ul.topnav li a.active {
 		background-color: var(--dm-primary-300);
 	}
-}
+}*/

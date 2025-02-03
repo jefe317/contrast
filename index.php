@@ -86,14 +86,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 	<input type="checkbox" id="toggle" class="menu-toggle">
 	<label for="toggle" class="menu-label">Menu</label>
 	<ul class="topnav controlled">
-		<li><a href="https://contrast.jefftml.com/">Home</a></li>
+		<li><a class="active" href="https://contrast.jefftml.com/">Home</a></li>
 		<li><a href="https://contrast.jefftml.com/help.html">Help</a></li>
 	</ul>
 	<div class="content">
 	<h1>Jeff&rsquo;s Color Contrast Analyzer</h1>
 	<form method="post">
 		<div class="format-list-wrapper">
-			<p class="format-list-title">Enter up to <?php echo MAX_COLORS; ?> colors (one per line) in any of these formats:</p>
+			<p class="format-list-title">Enter up to <?php echo MAX_COLORS; ?> colors, one per line, in any of these formats:</p>
 			<input type="checkbox" id="format-toggle" class="format-toggle" aria-expanded="false" aria-controls="format-list">
 			<label for="format-toggle" class="format-toggle-label"></label>
 			<ul id="format-list" class="format-list">
@@ -277,7 +277,7 @@ if (!empty($parsed_colors)): ?>
 <?php endforeach; ?>
 </table>
 <?php endif; ?>
-	<div style="font-size: 0.8em; color: rgba(150, 150, 150, 0.5); padding-top: 2em;"><?php 
+	<div class="timer"><?php 
 	$end = hrtime(true);
 	$nanoseconds = $end - $start;
 	// convert time to readable values
