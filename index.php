@@ -76,43 +76,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>Jeff's Color Contrast Analyzer</title>
-	<style>
-		:root { color-scheme: light dark; }
-		body { font-family: Arial, sans-serif; margin: 20px; }
-		table { border-collapse: collapse; margin: 20px 0; }
-		th, td { border: 1px solid #000; padding: 8px; text-align: left; vertical-align: top; }
-		td div { padding: 0 0.5em 0.5em 0; }
-		textarea { width: 100%; max-width: 400px; height: 200px; }
-		.checkered {background: conic-gradient(hsla(0, 0%, 50%, 20%) 90deg, transparent 90deg 180deg, hsla(0, 0%, 50%, 20%) 180deg 270deg, transparent 270deg); background-repeat: repeat; background-size: 40px 40px; }
-		.warning-message, .error-message { border-radius: 4px; padding: 12px; margin: 20px 0 0 0; max-height: 30vh; overflow: scroll; display: inline-block; max-width: calc(100% - 30px); }
-		.warning-message { background-color: hsla(28 100% 63% / 0.5); border: 1px solid hsla(28 100% 80% / 0.6); }
-		.error-message { background-color: hsla(0 100% 63% / 0.5); border: 1px solid hsla(0 100% 80% / 0.6); }
-		.error-message h3, .warning-message h3 { margin-top: 0; }
-		li { line-height: 1.5; }
-		.footer { padding-top: 1em; }
-		.format-list { margin: 1em 0; }
-		.warning-list { margin: 0; }
-		
-		/* Mobile-first styles */
-		.format-list-wrapper { position: relative; }
-		.format-list-title, .format-toggle { display: none; }
-		.format-toggle-label { cursor: pointer; padding: 0.5em; border: 1px solid #ccc; border-radius: 4px; display: block; margin-bottom: 0.5em; }
-		.format-toggle-label::after { content: "Enter up to 50 colors (one per line) in any of these formats: (click to expand)"; }
-		.format-list { display: none; border: 1px solid #ccc; border-radius: 4px; margin-bottom: 1.5em; }
-		.format-toggle:checked ~ .format-list { display: block; }
-		/* Desktop styles */
-		@media (min-width: 769px) {
-			.format-list-title { display: block; }
-			.format-toggle-label { display: none; }
-			.format-list { display: block; border: none; margin-bottom: 1em; }
-		}
-	</style>
+	<link rel="stylesheet" href="style.css">
 	<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
 	<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
 	<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
 	<link rel="manifest" href="/site.webmanifest">
 </head>
 <body>
+	<input type="checkbox" id="toggle" class="menu-toggle">
+	<label for="toggle" class="menu-label">Menu</label>
+	<ul class="topnav controlled">
+		<li><a href="https://contrast.jefftml.com/">Home</a></li>
+		<li><a href="https://contrast.jefftml.com/help.html">Help</a></li>
+	</ul>
+	<div class="content">
 	<h1>Jeff&rsquo;s Color Contrast Analyzer</h1>
 	<form method="post">
 		<div class="format-list-wrapper">
