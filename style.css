@@ -250,9 +250,18 @@ li {
 }
 
 /* help documentation */
+section {
+	border-top: 3px solid var(--primary-400);
+	margin-top: 3em;
+}
 code {
-	background: hsla(0, 0%, 50%, 0.5);
+	background: hsla(0, 0%, 50%, 0.3);
 	padding: 0.2em 0.4em;
 	border-radius: 3px;
 	font-family: 'Monaco', 'Consolas', monospace;
+}
+@media (prefers-color-scheme: dark) {
+	section {
+		border-top: 3px solid var(--dm-primary-400);
+	}
 }
