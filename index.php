@@ -100,7 +100,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 			<ul id="format-list" class="format-list">
 				<li><strong>Hex</strong>: #FFF, #FFFFFF, #FFFA (with alpha), #FFFFFFAA (with alpha)</li>
 				<li><strong>RGB and RGBA</strong>: rgb(255, 255, 255) and rgba(255, 255, 255, 0.5)</li>
-				<li><strong>HSL and HSLA</strong>: hsl(360, 100%, 100%) and hsla(360, 100%, 100%, 0.5)</li>
+				<li><strong>HSL and HSLA</strong>: hsl(360, 100%, 100%) and hsla(180deg 15.38% 94.9%, 0.5)</li>
 				<li>CSS <strong>Named Colors</strong>, like "black", "white", or "coral"</li>
 				<li><strong>HSB</strong>: hsb(240, 100%, 100%) and hsb(120, 50, 75)</li>
 				<li><strong>HWB</strong>: hwb(12 50% 0%) and hwb(0 100% 0% / 50%);</li>
