@@ -77,10 +77,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>Jeff's Color Contrast Analyzer</title>
 	<link rel="stylesheet" href="style.css">
-	<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-	<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-	<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
-	<link rel="manifest" href="/site.webmanifest">
+	<link rel="apple-touch-icon" sizes="180x180" href="https://contrast.jefftml.com/apple-touch-icon.png">
+	<link rel="icon" type="image/png" sizes="32x32" href="https://contrast.jefftml.com/favicon-32x32.png">
+	<link rel="icon" type="image/png" sizes="16x16" href="https://contrast.jefftml.com/favicon-16x16.png">
+	<link rel="manifest" href="https://contrast.jefftml.com/site.webmanifest">
+	<meta name="description" content="Calculate contrast ratios for multiple colors for WCAG guidelines. Hex, RGB, HSL, and all CSS color types supported. Download reports for offline use for free.">
 </head>
 <body>
 	<input type="checkbox" id="toggle" class="menu-toggle">
@@ -318,6 +319,6 @@ if (!empty($parsed_colors)): ?>
 	?></div>
 	<div class="footer"><?php echo getCopyrightYears(2024); ?>
 	</div>
-	<script src="tablewidth.js"></script>
+	<script src="https://contrast.jefftml.com/tablewidth.js"></script>
 </body>
 </html>
