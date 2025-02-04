@@ -12,6 +12,7 @@ if (!isset($parsed_colors)) {
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>Jeff's Color Contrast Analyzer Report - <?= date('Y-m-d H:i:s') ?></title>
 	<style>
+		:root { color-scheme: light dark; }
 		body { font-family: Arial, sans-serif; margin: 20px; }
 		table { border-collapse: collapse; margin: 20px 0; }
 		th, td { border: 1px solid #000; padding: 8px; text-align: left; vertical-align: top; }
