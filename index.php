@@ -322,22 +322,10 @@ if (!empty($parsed_colors)): ?>
 	<script type="text/javascript">
 		// Function to check table width and apply class
 		function checkTableWidth(tableSelector, threshold = 625) {
-			// Get all tables matching the selector
 			const tables = document.querySelectorAll(tableSelector);
-			
 			if (tables.length) {
-				console.log(`Found ${tables.length} tables`);
-				
-				// Loop through each table
 				tables.forEach((table, index) => {
-					// Get the table's width (including padding and border)
 					const tableWidth = table.offsetWidth;
-					
-					console.log(`Table ${index + 1}:`);
-					console.log('Table width:', tableWidth);
-					console.log('Threshold:', threshold);
-					
-					// Add or remove class based on width
 					if (tableWidth > threshold) {
 						console.log(`Table ${index + 1} is wider than threshold, adding wide-table class`);
 						table.classList.add('wide-table');
@@ -345,24 +333,13 @@ if (!empty($parsed_colors)): ?>
 						console.log(`Table ${index + 1} is narrower than threshold, removing wide-table class`);
 						table.classList.remove('wide-table');
 					}
-					
-					// Log the current classes on the table
-					console.log(`Current classes for table ${index + 1}:`, table.className);
 				});
-			} else {
-				console.warn('No tables found with selector:', tableSelector);
 			}
 		}
-
-		// Run when page loads
 		document.addEventListener('DOMContentLoaded', () => {
-			console.log('DOM Content Loaded - checking table widths');
 			checkTableWidth('.table-wrapper');
 		});
-
-		// Run when window resizes
 		window.addEventListener('resize', () => {
-			console.log('Window resized - checking table widths');
 			checkTableWidth('.table-wrapper');
 		});
 	</script>
