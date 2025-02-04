@@ -113,7 +113,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 			</ul>
 		</div>
 		<p>Labels can be added to a color by placing the label before a colon, like "link: #2C5491"</p>
-		<textarea name="colors" required><?= isset($_POST['colors']) ? htmlspecialchars($_POST['colors']) : '' ?></textarea>
+		<label for="colors">Input your colors:<br><textarea name="colors" required><?= isset($_POST['colors']) ? htmlspecialchars($_POST['colors']) : '' ?></textarea></label>
 		<br><br>
 		<button type="submit">Calculate Contrast</button>
 	</form>
