@@ -15,13 +15,13 @@ ini_set('session.use_only_cookies', 1);
 ini_set('session.gc_maxlifetime', 3600);
 
 // Set secure headers
-header("Content-Security-Policy: " . 
-	"default-src 'self'; " .
-	"style-src 'self' 'unsafe-inline'; " .
-	"img-src 'self' data: ; " .
-	"frame-ancestors 'none'; " .
-	"form-action 'self';"
-);
+// header("Content-Security-Policy: " . 
+// 	"default-src 'self'; " .
+// 	"style-src 'self' 'unsafe-inline'; " .
+// 	"img-src 'self' data: ; " .
+// 	"frame-ancestors 'none'; " .
+// 	"form-action 'self';"
+// );
 header("X-Content-Type-Options: nosniff");
 header("X-Frame-Options: DENY");
 header("X-XSS-Protection: 1; mode=block");
@@ -174,82 +174,85 @@ if (!empty($semantic_duplicates)): ?>
 	<br>
 <?php endif;
 if (!empty($parsed_colors)): ?>
-	<h2>Summary of Compatible Color Combinations</h2>
-	<table class="checkered">
-		<thead>
-			<tr>
-				<th>Background</th>
-				<th>AAA ≥ 7.0<br>Best</th>
-				<th>AA Normal ≥ 4.5<br>Second Best </th>
-				<th>AA Large ≥ 3.0<br>Third Best</th>
-			</tr>
-		</thead>
-		<tbody>
-			<?php foreach ($parsed_colors as $bg_color => $bg): 
-				// Calculate all combinations for this background color
-				$combinations = [];
-				foreach ($parsed_colors as $fg_color => $fg) {
-					if ($fg_color === $bg_color) continue;
-					
-					// Calculate luminance with alpha blending
-					$fg_lum = getLuminance($fg['rgb'], $fg['alpha'], $bg['rgb']);
-					$bg_lum = $bg['luminance'];
-					$contrast = getContrastRatio($bg_lum, $fg_lum);
-					
-					$wcag_level = getWCAGLevel($contrast);
-					if ($wcag_level !== 'Fail') {
-						$combinations[] = [
-							'color' => $fg_color,
-							'contrast' => $contrast,
-							'level' => $wcag_level
-						];
+	<div class="table-wrapper">
+		<h2>Summary of Compatible Color Combinations</h2>
+		<table class="checkered">
+			<thead>
+				<tr>
+					<th>Background</th>
+					<th>AAA ≥ 7.0<br>Best</th>
+					<th>AA Normal ≥ 4.5<br>Second Best </th>
+					<th>AA Large ≥ 3.0<br>Third Best</th>
+				</tr>
+			</thead>
+			<tbody>
+				<?php foreach ($parsed_colors as $bg_color => $bg): 
+					// Calculate all combinations for this background color
+					$combinations = [];
+					foreach ($parsed_colors as $fg_color => $fg) {
+						if ($fg_color === $bg_color) continue;
+						
+						// Calculate luminance with alpha blending
+						$fg_lum = getLuminance($fg['rgb'], $fg['alpha'], $bg['rgb']);
+						$bg_lum = $bg['luminance'];
+						$contrast = getContrastRatio($bg_lum, $fg_lum);
+						
+						$wcag_level = getWCAGLevel($contrast);
+						if ($wcag_level !== 'Fail') {
+							$combinations[] = [
+								'color' => $fg_color,
+								'contrast' => $contrast,
+								'level' => $wcag_level
+							];
+						}
 					}
-				}
 
-				// Group by WCAG level
-				$wcag_groups = [
-					'AAA' => [],
-					'AA' => [],
-					'AA Large' => []
-				];
-				
-				foreach ($combinations as $combo) {
-					$wcag_groups[$combo['level']][] = $combo;
-				}
-				
-				// Sort each group by contrast ratio
-				foreach ($wcag_groups as &$group) {
-					usort($group, function($a, $b) {
-						return $b['contrast'] <=> $a['contrast'];
-					});
-				}
+					// Group by WCAG level
+					$wcag_groups = [
+						'AAA' => [],
+						'AA' => [],
+						'AA Large' => []
+					];
+					
+					foreach ($combinations as $combo) {
+						$wcag_groups[$combo['level']][] = $combo;
+					}
+					
+					// Sort each group by contrast ratio
+					foreach ($wcag_groups as &$group) {
+						usort($group, function($a, $b) {
+							return $b['contrast'] <=> $a['contrast'];
+						});
+					}
 
-				// Check if there are any valid combinations
-				$has_valid_combinations = !empty($wcag_groups['AAA']) || 
-									   !empty($wcag_groups['AA']) || 
-									   !empty($wcag_groups['AA Large']);
-			?><tr style="background-color: <?= htmlspecialchars(getCssColor($bg_color)) ?>;">
-				<td>
-					<?php 
-					// Use alpha-aware luminance for text color calculation
-					$bg_text_lum = getLuminance($bg['rgb'], $bg['alpha']); ?>
-					<span style="color: <?= $bg_text_lum > 0.5 ? '#000000' : '#FFFFFF' ?>"><?= htmlspecialchars(getCleanColorName($bg_color)) ?></span>
-				</td>
-		<?php if ($has_valid_combinations): ?>
-			<?php foreach (['AAA', 'AA', 'AA Large'] as $level): ?>
-				<td><?php foreach ($wcag_groups[$level] as $combo): ?>
-					<div style="color: <?= htmlspecialchars(getCssColor($combo['color'])) ?>;"><?= htmlspecialchars($combo['color']) ?> (Ratio: <?= number_format($combo['contrast'], 2) ?>)</div>
-				<?php endforeach; ?></td>
-			<?php endforeach; ?>
-			<?php else: ?>
-				<td colspan="3" style="text-align: center; color: <?= $bg_text_lum > 0.5 ? '#000000' : '#FFFFFF' ?>">No valid color combinations found (all contrast ratios below 3.0)
-				</td>
-			<?php endif; ?>
-			</tr>
-			<?php endforeach; ?>
-		</tbody>
-	</table>
+					// Check if there are any valid combinations
+					$has_valid_combinations = !empty($wcag_groups['AAA']) || 
+										   !empty($wcag_groups['AA']) || 
+										   !empty($wcag_groups['AA Large']);
+				?><tr style="background-color: <?= htmlspecialchars(getCssColor($bg_color)) ?>;">
+					<td>
+						<?php 
+						// Use alpha-aware luminance for text color calculation
+						$bg_text_lum = getLuminance($bg['rgb'], $bg['alpha']); ?>
+						<span style="color: <?= $bg_text_lum > 0.5 ? '#000000' : '#FFFFFF' ?>"><?= htmlspecialchars(getCleanColorName($bg_color)) ?></span>
+					</td>
+			<?php if ($has_valid_combinations): ?>
+				<?php foreach (['AAA', 'AA', 'AA Large'] as $level): ?>
+					<td><?php foreach ($wcag_groups[$level] as $combo): ?>
+						<div style="color: <?= htmlspecialchars(getCssColor($combo['color'])) ?>;"><?= htmlspecialchars($combo['color']) ?>&nbsp;(Ratio:&nbsp;<?= number_format($combo['contrast'], 2) ?>)</div>
+					<?php endforeach; ?></td>
+				<?php endforeach; ?>
+				<?php else: ?>
+					<td colspan="3" style="text-align: center; color: <?= $bg_text_lum > 0.5 ? '#000000' : '#FFFFFF' ?>">No valid color combinations found (all contrast ratios below 3.0)
+					</td>
+				<?php endif; ?>
+				</tr>
+				<?php endforeach; ?>
+			</tbody>
+		</table>
+	</div>
 
+	<div class="table-wrapper">
 	<h2>Complete Contrast Grid</h2>
 	<table class="checkered">
 	<tr>
@@ -258,10 +261,10 @@ if (!empty($parsed_colors)): ?>
 		<th><?= htmlspecialchars(getCleanColorName($color)) ?></th>
 	<?php endforeach; ?>
 	</tr>
-<?php foreach ($parsed_colors as $bg_color => $bg_data): ?>
+	<?php foreach ($parsed_colors as $bg_color => $bg_data): ?>
 	<tr>
 		<th><?= htmlspecialchars(getCleanColorName($bg_color)) ?></th>
-<?php foreach ($parsed_colors as $fg_color => $fg_data): 
+		<?php foreach ($parsed_colors as $fg_color => $fg_data): 
 			// Calculate luminance with alpha blending
 			$fg_lum = getLuminance($fg_data['rgb'], $fg_data['alpha'], $bg_data['rgb']);
 			$bg_lum = $bg_data['luminance'];
@@ -272,10 +275,11 @@ if (!empty($parsed_colors)): ?>
 				<div style="font-size: 0.8em;"><?= number_format($contrast, 2) ?><br><?= $wcag_level ?></div>
 				</div>
 			</td>
-<?php endforeach; ?>
-</tr>
-<?php endforeach; ?>
-</table>
+	<?php endforeach; ?>
+	</tr>
+	<?php endforeach; ?>
+	</table>
+</div>
 <?php endif; ?>
 	<div class="timer"><?php 
 	$end = hrtime(true);
@@ -314,5 +318,53 @@ if (!empty($parsed_colors)): ?>
 	?></div>
 	<div class="footer"><?php echo getCopyrightYears(2024); ?>
 	</div>
+
+	<script type="text/javascript">
+		// Function to check table width and apply class
+		function checkTableWidth(tableSelector, threshold = 625) {
+			// Get all tables matching the selector
+			const tables = document.querySelectorAll(tableSelector);
+			
+			if (tables.length) {
+				console.log(`Found ${tables.length} tables`);
+				
+				// Loop through each table
+				tables.forEach((table, index) => {
+					// Get the table's width (including padding and border)
+					const tableWidth = table.offsetWidth;
+					
+					console.log(`Table ${index + 1}:`);
+					console.log('Table width:', tableWidth);
+					console.log('Threshold:', threshold);
+					
+					// Add or remove class based on width
+					if (tableWidth > threshold) {
+						console.log(`Table ${index + 1} is wider than threshold, adding wide-table class`);
+						table.classList.add('wide-table');
+					} else {
+						console.log(`Table ${index + 1} is narrower than threshold, removing wide-table class`);
+						table.classList.remove('wide-table');
+					}
+					
+					// Log the current classes on the table
+					console.log(`Current classes for table ${index + 1}:`, table.className);
+				});
+			} else {
+				console.warn('No tables found with selector:', tableSelector);
+			}
+		}
+
+		// Run when page loads
+		document.addEventListener('DOMContentLoaded', () => {
+			console.log('DOM Content Loaded - checking table widths');
+			checkTableWidth('.table-wrapper');
+		});
+
+		// Run when window resizes
+		window.addEventListener('resize', () => {
+			console.log('Window resized - checking table widths');
+			checkTableWidth('.table-wrapper');
+		});
+	</script>
 </body>
 </html>
