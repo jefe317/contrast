@@ -4,8 +4,8 @@ $start = hrtime(true);
 date_default_timezone_set('America/Chicago');
 
 // Security headers and settings
-ini_set('display_errors', '1');
-ini_set('display_startup_errors', '1');
+ini_set('display_errors', '0');
+ini_set('display_startup_errors', '0');
 error_reporting(E_ALL);
 ini_set('session.cookie_httponly', 1);
 ini_set('session.cookie_secure', 1);
@@ -15,13 +15,13 @@ ini_set('session.use_only_cookies', 1);
 ini_set('session.gc_maxlifetime', 3600);
 
 // Set secure headers
-// header("Content-Security-Policy: " . 
-// 	"default-src 'self'; " .
-// 	"style-src 'self' 'unsafe-inline'; " .
-// 	"img-src 'self' data: ; " .
-// 	"frame-ancestors 'none'; " .
-// 	"form-action 'self';"
-// );
+header("Content-Security-Policy: " . 
+	"default-src 'self'; " .
+	"style-src 'self' 'unsafe-inline'; " .
+	"img-src 'self' data: ; " .
+	"frame-ancestors 'none'; " .
+	"form-action 'self';"
+);
 header("X-Content-Type-Options: nosniff");
 header("X-Frame-Options: DENY");
 header("X-XSS-Protection: 1; mode=block");
