@@ -101,7 +101,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 				<li><strong>Hex</strong>: #FFF, #FFFFFF, #FFFA (with alpha), #FFFFFFAA (with alpha)</li>
 				<li><strong>RGB and RGBA</strong>: rgb(255, 255, 255) and rgba(255, 255, 255, 0.5)</li>
 				<li><strong>HSL and HSLA</strong>: hsl(360, 100%, 100%) and hsla(180deg 15.38% 94.9%, 0.5)</li>
-				<li>CSS <strong>Named Colors</strong>, like "black", "white", or "coral"</li>
+				<li>CSS <strong>Named Colors</strong>, like &ldquo;black&rdquo;, &ldquo;white&rdquo;, or &ldquo;coral&rdquo;</li>
 				<li><strong>HSB</strong>: hsb(240, 100%, 100%) and hsb(120, 50, 75)</li>
 				<li><strong>HWB</strong>: hwb(12 50% 0%) and hwb(0 100% 0% / 50%);</li>
 				<li><strong>Lab</strong>: lab(80% 100 50) and lab(50% 40 59.5 / 0.5)</li>
@@ -109,11 +109,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 				<li><strong>Oklab</strong>: oklab(59% 0.1 0.1) and oklab(59% 0.1 0.1 / 0.5)</li>
 				<li><strong>Oklch</strong>: oklch(60% 0.15 50) and oklch(60% 0.15 50 / 0.5)</li>
 				<li><strong>CMYK</strong>: cmyk(100%, 0%, 0%, 0%) and cmyk(0, 100, 100, 0)</li>
-				<li>CSS syntax is also accepted (e.g., "color: #FFF;" or "background-color: rgb(255, 0, 0);")</li>
+				<li>CSS syntax is also accepted (e.g., &ldquo;color: #FFF;&rdquo; or &ldquo;background-color: rgb(255, 0, 0);&rdquo;)</li>
 				<li>Note: <code>from</code>, <code>calc()</code>, and <code>color()</code> are not supported.</li>
 			</ul>
 		</div>
-		<p>Labels can be added to a color by placing the label before a colon, like "link: #2C5491"</p>
+		<p>Labels can be added to a color by placing the label before a colon, like &ldquo;link: #2C5491&rdquo;</p>
 		<label for="colors">Input your colors:<br><textarea name="colors" required autocapitalize="off" autocomplete="off" spellcheck="false" placeholder="Enter colors here, 
 one color per line"><?= isset($_POST['colors']) ? htmlspecialchars($_POST['colors']) : '' ?></textarea></label>
 		<br><br>
