@@ -133,7 +133,7 @@ ul.topnav li.right {
 }
 
 .content {
-	margin: 40px auto;
+	margin: 20px auto;
 	max-width: 625px;
 	padding: 0 10px;
 }
@@ -141,6 +141,10 @@ h1,
 h2,
 h3 {
 	line-height: 1.1;
+}
+h1
+{
+	font-size: 2rem;
 }
 a {
 	color: var(--primary-600);
@@ -274,5 +278,14 @@ code {
 @media (prefers-color-scheme: dark) {
 	section {
 		border-top: 3px solid var(--dm-primary-400);
+	}
+}
+
+@media screen and (max-width: 800px) {
+	h1 {
+		font-size: 1.5rem;
+	}
+	textarea {
+		height: 50px;
 	}
 }

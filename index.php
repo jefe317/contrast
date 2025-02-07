@@ -110,11 +110,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 				<li><strong>Oklch</strong>: oklch(60% 0.15 50) and oklch(60% 0.15 50 / 0.5)</li>
 				<li><strong>CMYK</strong>: cmyk(100%, 0%, 0%, 0%) and cmyk(0, 100, 100, 0)</li>
 				<li>CSS syntax is also accepted (e.g., "color: #FFF;" or "background-color: rgb(255, 0, 0);")</li>
-				<li>Note: <code>from</code> and <code>calc()</code> are not supported.</li>
+				<li>Note: <code>from</code>, <code>calc()</code>, and <code>color()</code> are not supported.</li>
 			</ul>
 		</div>
 		<p>Labels can be added to a color by placing the label before a colon, like "link: #2C5491"</p>
-		<label for="colors">Input your colors:<br><textarea name="colors" required><?= isset($_POST['colors']) ? htmlspecialchars($_POST['colors']) : '' ?></textarea></label>
+		<label for="colors">Input your colors:<br><textarea name="colors" required autocapitalize="off" autocomplete="off" spellcheck="false" placeholder="Enter colors here, 
+one color per line"><?= isset($_POST['colors']) ? htmlspecialchars($_POST['colors']) : '' ?></textarea></label>
 		<br><br>
 		<button type="submit">Calculate Contrast</button>
 	</form>
