@@ -35,12 +35,12 @@ function parseColor($color) {
 	}
 
 	// Validate hex format length before processing
-	if (preg_match('/^#[A-Fa-f0-9]+$/', $color) && strlen($color) != 4 && strlen($color) != 5 && strlen($color) != 7 && strlen($color) != 9) {
-		return false;
+	if (preg_match('/^#?[A-Fa-f0-9]+$/', $color) && strlen(ltrim($color, '#')) != 3 && strlen(ltrim($color, '#')) != 4 && strlen(ltrim($color, '#')) != 6 && strlen(ltrim($color, '#')) != 8) {
+	    return false;
 	}
 
 	// Process valid hex colors
-	if (preg_match('/^#([A-Fa-f0-9]{3,8})$/', $color, $matches)) {
+	if (preg_match('/^#?([A-Fa-f0-9]{3,8})$/', $color, $matches)) {
 		$hex = ltrim($color, '#');
 		$length = strlen($hex);
 		
