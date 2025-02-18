@@ -31,9 +31,9 @@
 		<section id="overview">
 			<h2>How to Use and Interpret the Results</h2>
 			<ul>
-				<li>After you enter the color values you want to analyze and click “Calculate Contrast”, you’ll see 2 tables appear.</li>
-				<li>The first table is rows of background colors and columns of foreground colors with the background color for that row on the first, leftmost column. The second column from left is “AAA” results, which will have the highest contrast ratio for that background color row. The third column “AA Normal” has the second most contrast ratio, and the rightmost column has the smallest passing contrast ratio. Failing color combinations are not shown in the summary table. The name of each color and the contrast ratio is in the color supplied so you can see the contrast in the table cells.</li>
-				<li>The second table is every color that was entered in both rows and columns. Background colors are the rows, foreground colors are the columns. In each table cell, “Sample” text is followed by the contrast ratio, and the last part is the WCAG contrast category. If the contrast ratio is below 3.0, the result will say “Fail”.</li>
+				<li>After you enter the color values you want to analyze and click &ldquo;Calculate Contrast&rdquo;, you&rsquo;ll see 2 tables appear.</li>
+				<li>The first table is rows of background colors and columns of foreground colors with the background color for that row on the first, leftmost column. The second column from left is &ldquo;AAA&rdquo; results, which will have the highest contrast ratio for that background color row. The third column &ldquo;AA Normal&rdquo; has the second most contrast ratio, and the rightmost column has the smallest passing contrast ratio. Failing color combinations are not shown in the summary table. The name of each color and the contrast ratio is in the color supplied so you can see the contrast in the table cells.</li>
+				<li>The second table is every color that was entered in both rows and columns. Background colors are the rows, foreground colors are the columns. In each table cell, &ldquo;Sample&rdquo; text is followed by the contrast ratio, and the last part is the WCAG contrast category. If the contrast ratio is below 3.0, the result will say &ldquo;Fail&rdquo;.</li>
 				<li>These 3 categories and the Failing result are defined by the <a href="https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html">W3C WCAG</a>. More contrast is not always needed, so keep that in mind when interpreting results.</li>
 				<li>The background of the table is a checkerboard pattern to help show transparent colors. Transparent text over a solid background is calculated after mixing the two colors together. The WCAG does not factor transparency into their recommendations, however this tool does calculate this and you will notice lower contrast ratios with a transparent color compared to a similar opaque color.</li>
 			</ul>
@@ -51,21 +51,21 @@
 				<li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/hex-color">Hex</a></li>
 				<li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/color_value/rgb">RGB and RGBA</a></li>
 				<li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/color_value/hsl">HSL and HSLA</a></li>
-				<li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/named-color">CSS Named Colors</a>, like "black", "white", or "coral"</li>
-				<li>HSB (This isn't a valid CSS syntax, but I included it anyways.)</li>
+				<li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/named-color">CSS Named Colors</a>, like &ldquo;black&rdquo;, &ldquo;white&rdquo;, or &ldquo;coral&rdquo;</li>
+				<li>HSB (This isn&rsquo;t a valid CSS syntax, but I included it anyways.)</li>
 				<li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/color_value/hwb">HWB</a></li>
 				<li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/color_value/lab">Lab</a></li>
 				<li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/color_value/lch">LCH</a></li>
 				<li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/color_value/oklab">Oklab</a></li>
 				<li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/color_value/oklch">Oklch</a></li>
-				<li>CMYK (This isn't a valid CSS syntax, but I included it anyways.)</li>
-				<li>Note: Relative values (from and calc) are not supported. Sorry, it’s too much math for me.</li>
+				<li>CMYK (This isn&rsquo;t a valid CSS syntax, but I included it anyways.)</li>
+				<li>Note: Relative values (from and calc) are not supported. Color() is not supported.</li>
 			</ul>
 		</section>
 		<section id="export">
 			<h2>Exporting Results</h2>
 			<ul>
-				<li>After entering colors and clicking “Calculate Contrast”, a “Download Report” button will appear below the “Calculate Contrast” button. Clicking the “Download Report” will download a HTML file with your results. Just the summary and complete contrast tables are included in the downloaded file. The current timestamp is included in the filename.</li>
+				<li>After entering colors and clicking &ldquo;Calculate Contrast&rdquo;, a &ldquo;Download Report&rdquo; button will appear below the &ldquo;Calculate Contrast&rdquo; button. Clicking the &ldquo;Download Report&rdquo; will download a HTML file with your results. Just the summary and complete contrast tables are included in the downloaded file. The current timestamp is included in the filename.</li>
 				<li>If a HTML file is not automatically downloaded, you might see the report in a new browser window. You can save this as a file on your device.</li>
 			</ul>
 		</section>
@@ -84,12 +84,12 @@
 				</li>
 				<li>Equivalent colors
 					<ul>
-						<li>Similar to the "Duplicate colors" warning, if you enter the same color in a different way, like <code>red</code> and <code>#ff0000</code>, only the first entry will be calculated. Since color conversions need to happen behind the scenes, it doesn't detect every equivalent color. This is done on purpose so that if you have 2 very similar colors, it doesn't ignore the two distinct colors.</li>
+						<li>Similar to the &ldquo;Duplicate colors&rdquo; warning, if you enter the same color in a different way, like <code>red</code> and <code>#ff0000</code>, only the first entry will be calculated. Since color conversions need to happen behind the scenes, it doesn&rsquo;t detect every equivalent color. This is done on purpose so that if you have 2 very similar colors, it doesn&rsquo;t ignore the two distinct colors.</li>
 					</ul>
 				</li>
 				<li>Unknown color
 					<ul>
-						<li>If the code doesn't recognize your input, I don't know what you expect to happen. Refer to the examples at the top of the main page for syntax that is supported.</li>
+						<li>If the code doesn&rsquo;t recognize your input, I don&rsquo;t know what you expect to happen. Refer to the examples at the top of the main page for syntax that is supported.</li>
 					</ul>
 				</li>
 			</ul>

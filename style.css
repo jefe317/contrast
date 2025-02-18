@@ -122,7 +122,7 @@ ul.topnav li.right {
 }
 
 .format-toggle-label::after {
-	content: "Enter up to 50 colors, one per line, in any of these formats: (click to expand)";
+	content: "Analyze color contrast between multiple colors, up to 50 colors total, in any of these formats: (click to expand)";
 }
 
 .format-list {
@@ -156,10 +156,6 @@ ul.topnav li.right {
 	padding: 0 10px;
 }
 
-h1, h2, h3, p {
-	text-wrap: balance;
-	text-wrap: pretty;
-}
 
 h1, h2, h3 {
 	line-height: 1.1;

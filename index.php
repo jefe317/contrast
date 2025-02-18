@@ -94,7 +94,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 	<h1>Jeff&rsquo;s Color Contrast Analyzer</h1>
 	<form method="post">
 		<div class="format-list-wrapper">
-			<p class="format-list-title">Enter up to <?php echo MAX_COLORS; ?> colors, one per line, in any of these formats:</p>
+			<p class="format-list-title">Analyze color contrast between multiple colors, up to <?php echo MAX_COLORS; ?> colors total, in any of these formats:</p>
 			<input type="checkbox" id="format-toggle" class="format-toggle" aria-expanded="false" aria-controls="format-list">
 			<label for="format-toggle" class="format-toggle-label"></label>
 			<ul id="format-list" class="format-list">
