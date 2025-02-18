@@ -95,7 +95,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 	<form method="post">
 		<div class="format-list-wrapper">
 			<p class="format-list-title">Analyze color contrast between multiple colors, up to <?php echo MAX_COLORS; ?> colors total, in any of these formats:</p>
-			<input type="checkbox" id="format-toggle" class="format-toggle" aria-expanded="false" aria-controls="format-list">
+			<input type="checkbox" id="format-toggle" class="format-toggle">
 			<label for="format-toggle" class="format-toggle-label"></label>
 			<ul id="format-list" class="format-list">
 				<li><strong>Hex</strong>: #FFF, #FFFFFF, #FFFA (with alpha), #FFFFFFAA (with alpha)</li>
@@ -114,7 +114,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 			</ul>
 		</div>
 		<p>Labels can be added to a color by placing the label before a colon, like &ldquo;link: #2C5491&rdquo;</p>
-		<label for="colors">Input your colors:<br><textarea name="colors" required autocapitalize="off" autocomplete="off" spellcheck="false" placeholder="Enter colors here, 
+		<label for="colors">Input your colors:<br><textarea name="colors" id="colors" required autocapitalize="off" autocomplete="off" spellcheck="false" placeholder="Enter colors here, 
 one color per line"><?= isset($_POST['colors']) ? htmlspecialchars($_POST['colors']) : '' ?></textarea></label>
 		<br><br>
 		<button type="submit">Calculate Contrast</button>
@@ -321,5 +321,6 @@ if (!empty($parsed_colors)): ?>
 	<div class="footer"><?php echo getCopyrightYears(2024); ?>
 	</div>
 	<script src="https://contrast.jefftml.com/tablewidth.js"></script>
+	</div>
 </body>
 </html>
