@@ -287,6 +287,10 @@ code {
 	font-family: monospace;
 }
 
+.forcewrap {
+	word-break: break-all;
+}
+
 @media (prefers-color-scheme: dark) {
 	section {
 		border-top: 3px solid var(--dm-primary-400);
