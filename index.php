@@ -175,7 +175,16 @@ if (!empty($semantic_duplicates)): ?>
 	</div>
 	<br>
 <?php endif;
-if (!empty($parsed_colors)): ?>
+if (!empty($parsed_colors)): 
+	// log a usage for our stats.txt
+	date_default_timezone_set('America/Chicago');
+	$datetime = date('Y-m-d h:i:s A');
+	$file = 'stats.txt';
+	$value = count($parsed_colors)." colors, ";
+	// Create the log entry
+	$logEntry = $datetime . ", " . $value . PHP_EOL;
+	file_put_contents($file, $logEntry, FILE_APPEND);
+	?>
 	<div class="table-wrapper">
 		<h2>Summary of Compatible Color Combinations</h2>
 		<table class="checkered">
