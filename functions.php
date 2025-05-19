@@ -232,6 +232,236 @@ function getCssColor($color) {
 	return sprintf('rgba(%d, %d, %d, %.3f)', $rgba[0], $rgba[1], $rgba[2], $rgba[3]);
 }
 
+// Updated APCA implementation based on the JavaScript reference
+
+/**
+ * Convert sRGB to Y (luminance) for APCA
+ * Based on the reference JavaScript implementation
+ */
+function sRGBtoY($rgb) {
+	$mainTRC = 2.4;
+	$sRco = 0.2126729;
+	$sGco = 0.7151522;
+	$sBco = 0.0721750;
+	
+	$simpleExp = function($chan) use ($mainTRC) {
+		return pow($chan / 255.0, $mainTRC);
+	};
+	
+	return $sRco * $simpleExp($rgb[0]) + $sGco * $simpleExp($rgb[1]) + $sBco * $simpleExp($rgb[2]);
+}
+
+/**
+ * Calculate APCA contrast value between two colors
+ * Based on the APCA algorithm by Andrew Somers (version 0.1.9 for WCAG 3)
+ * Updated to match the JavaScript reference implementation
+ * 
+ * @param array $bg RGB background color array [r,g,b]
+ * @param array $text RGB text color array [r,g,b]
+ * @param float $bgAlpha Background alpha (0-1)
+ * @param float $textAlpha Text alpha (0-1)
+ * @return float APCA contrast value (can be negative or positive)
+ */
+function getAPCAContrast($bg, $text, $bgAlpha = 1, $textAlpha = 1) {
+	// Handle alpha blending if needed
+	if ($bgAlpha < 1 || $textAlpha < 1) {
+		// For simplicity, assume white backdrop for alpha blending
+		$backdrop = [255, 255, 255];
+		if ($bgAlpha < 1) {
+			$bg = blendColors($bg, $backdrop, $bgAlpha);
+		}
+		if ($textAlpha < 1) {
+			$text = blendColors($text, $bg, $textAlpha);
+		}
+	}
+	
+	// APCA constants from the JavaScript reference
+	$normBG = 0.56;
+	$normTXT = 0.57;
+	$revTXT = 0.62;
+	$revBG = 0.65;
+	$blkThrs = 0.022;
+	$blkClmp = 1.414;
+	$scaleBoW = 1.14;
+	$scaleWoB = 1.14;
+	$loBoWoffset = 0.027;
+	$loWoBoffset = 0.027;
+	$deltaYmin = 0.0005;
+	$loClip = 0.1;
+	
+	// Convert sRGB to Y (luminance)
+	$txtY = sRGBtoY($text);
+	$bgY = sRGBtoY($bg);
+	
+	// Validate input range
+	$icp = [0.0, 1.1];
+	if (is_nan($txtY) || is_nan($bgY) || min($txtY, $bgY) < $icp[0] || max($txtY, $bgY) > $icp[1]) {
+		return 0.0;
+	}
+	
+	// Apply soft clip and clamp black levels
+	$txtY = ($txtY > $blkThrs) ? $txtY : $txtY + pow($blkThrs - $txtY, $blkClmp);
+	$bgY = ($bgY > $blkThrs) ? $bgY : $bgY + pow($blkThrs - $bgY, $blkClmp);
+	
+	// Check if the difference is too small (same or nearly same colors)
+	if (abs($bgY - $txtY) < $deltaYmin) {
+		return 0.0;
+	}
+	
+	$SAPC = 0.0;
+	$outputContrast = 0.0;
+	
+	if ($bgY > $txtY) { // Normal polarity (dark text on light background)
+		$SAPC = (pow($bgY, $normBG) - pow($txtY, $normTXT)) * $scaleBoW;
+		$outputContrast = ($SAPC < $loClip) ? 0.0 : $SAPC - $loBoWoffset;
+	} else { // Reverse polarity (light text on dark background)
+		$SAPC = (pow($bgY, $revBG) - pow($txtY, $revTXT)) * $scaleWoB;
+		$outputContrast = ($SAPC > -$loClip) ? 0.0 : $SAPC + $loWoBoffset;
+	}
+	
+	// Return as percentage
+	return $outputContrast * 100.0;
+}
+
+/**
+ * Get APCA contrast level
+ * Based on APCA guidelines
+ * 
+ * @param float $contrast APCA contrast value
+ * @return string APCA compliance level
+ */
+function getAPCALevel($contrast) {
+	$absContrast = abs($contrast);
+	
+	if ($absContrast >= 90) {
+		return 'Perfect - LCf 90+ (All text)';
+	} elseif ($absContrast >= 75) {
+		return 'Excellent - LCf 75+ (Body text)';
+	} elseif ($absContrast >= 60) {
+		return 'Good - LCf 60+ (Large text)';
+	} elseif ($absContrast >= 45) {
+		return 'Fair - LCf 45+ (Large bold text)';
+	} elseif ($absContrast >= 30) {
+		return 'Poor - LCf 30+ (Spot text only)';
+	} else {
+		return 'Fail - Insufficient contrast';
+	}
+}
+
+/**
+ * Calculate APCA contrast (convenience function)
+ * 
+ * @param array $textColor RGB text color array
+ * @param array $bgColor RGB background color array
+ * @param float $textAlpha Text alpha (0-1)
+ * @param float $bgAlpha Background alpha (0-1)
+ * @return float APCA contrast value
+ */
+function calcAPCA($textColor, $bgColor, $textAlpha = 1, $bgAlpha = 1) {
+	return getAPCAContrast($bgColor, $textColor, $bgAlpha, $textAlpha);
+}
+
+/**
+ * Alpha blend function for APCA calculations
+ * 
+ * @param array $rgbaFG Foreground color with alpha [r,g,b,a]
+ * @param array $rgbBG Background color [r,g,b]
+ * @param bool $round Whether to round the result
+ * @return array Blended RGB color
+ */
+function alphaBlend($rgbaFG, $rgbBG, $round = true) {
+	$alpha = max(min($rgbaFG[3], 1.0), 0.0);
+	$compBlend = 1.0 - $alpha;
+	$rgbOut = [0, 0, 0];
+	
+	for ($i = 0; $i < 3; $i++) {
+		$rgbOut[$i] = $rgbBG[$i] * $compBlend + $rgbaFG[$i] * $alpha;
+		if ($round) {
+			$rgbOut[$i] = min(round($rgbOut[$i]), 255);
+		}
+	}
+	
+	return $rgbOut;
+}
+
+/**
+ * Reverse APCA - find unknown color given contrast and known color
+ * 
+ * @param float $contrast Target APCA contrast
+ * @param float $knownY Known color luminance
+ * @param string $knownType Either 'bg' or 'text'
+ * @param string $returnAs Return format: 'hex', 'rgb', or 'Y'
+ * @return mixed The calculated color in requested format, or false if impossible
+ */
+function reverseAPCA($contrast = 0, $knownY = 1.0, $knownType = 'bg', $returnAs = 'hex') {
+	if (abs($contrast) < 9) {
+		return false;
+	}
+	
+	$normBG = 0.56;
+	$normTXT = 0.57;
+	$revTXT = 0.62;
+	$revBG = 0.65;
+	$blkThrs = 0.022;
+	$blkClmp = 1.414;
+	$scaleBoW = 1.14;
+	$scaleWoB = 1.14;
+	$loBoWoffset = 0.027;
+	$loWoBoffset = 0.027;
+	$mainTRCencode = 1 / 2.4;
+	
+	// Constants for reverse calculation
+	$mFactor = 1.94685544331710;
+	$mFactInv = 1 / $mFactor;
+	$mOffsetIn = 0.03873938165714010;
+	$mExpAdj = 0.2833433964208690;
+	$mExp = $mExpAdj / $blkClmp;
+	$mOffsetOut = 0.3128657958707580;
+	
+	$unknownY = $knownY;
+	
+	$scale = $contrast > 0 ? $scaleBoW : $scaleWoB;
+	$offset = $contrast > 0 ? $loBoWoffset : -$loWoBoffset;
+	$contrast = ($contrast * 0.01 + $offset) / $scale;
+	
+	$knownY = ($knownY > $blkThrs) ? $knownY : $knownY + pow($blkThrs - $knownY, $blkClmp);
+	
+	if ($knownType == 'bg' || $knownType == 'background') {
+		$knownExp = $contrast > 0 ? $normBG : $revBG;
+		$unknownExp = $contrast > 0 ? $normTXT : $revTXT;
+		$unknownY = pow(pow($knownY, $knownExp) - $contrast, 1 / $unknownExp);
+		if (is_nan($unknownY)) return false;
+	} elseif ($knownType == 'txt' || $knownType == 'text') {
+		$knownExp = $contrast > 0 ? $normTXT : $revTXT;
+		$unknownExp = $contrast > 0 ? $normBG : $revBG;
+		$unknownY = pow($contrast + pow($knownY, $knownExp), 1 / $unknownExp);
+		if (is_nan($unknownY)) return false;
+	} else {
+		return false;
+	}
+	
+	if ($unknownY > 1.06 || $unknownY < 0) {
+		return false;
+	}
+	
+	$unknownY = ($unknownY > $blkThrs) ? $unknownY : (pow((($unknownY + $mOffsetIn) * $mFactor), $mExp) * $mFactInv) - $mOffsetOut;
+	
+	$unknownY = max(min($unknownY, 1.0), 0.0);
+	
+	if ($returnAs === 'hex') {
+		$hexB = dechex(round(pow($unknownY, $mainTRCencode) * 255));
+		$hexB = str_pad($hexB, 2, '0', STR_PAD_LEFT);
+		return '#' . $hexB . $hexB . $hexB;
+	} elseif ($returnAs === 'rgb') {
+		$colorB = round(pow($unknownY, $mainTRCencode) * 255);
+		return [$colorB, $colorB, $colorB];
+	} elseif ($returnAs === 'Y' || $returnAs === 'y') {
+		return max(0.0, $unknownY);
+	} else {
+		return false;
+	}
+}
+
 function getCopyrightYears($foundedYear) {
 	$currentYear = date('Y');
 	$site = "&copy; <a href=\"https://jefftml.com\">Jeff Lange</a>";
