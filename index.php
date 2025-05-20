@@ -3,7 +3,7 @@
 $start = hrtime(true);
 date_default_timezone_set('America/Chicago');
 
-// require_once 'security.php';
+require_once 'security.php';
 require_once 'functions.php';
 require_once 'parse_colors.php';
 require_once 'process_form.php';
