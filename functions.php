@@ -232,8 +232,6 @@ function getCssColor($color) {
 	return sprintf('rgba(%d, %d, %d, %.3f)', $rgba[0], $rgba[1], $rgba[2], $rgba[3]);
 }
 
-// Updated APCA implementation based on the JavaScript reference
-
 /**
  * Convert sRGB to Y (luminance) for APCA
  * Based on the reference JavaScript implementation

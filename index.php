@@ -1,7 +1,7 @@
 <?php
 // index.php
-$start = hrtime(true);
 date_default_timezone_set('America/Chicago');
+$start = hrtime(true);
 
 // require_once 'security.php';
 require_once 'functions.php';
@@ -63,44 +63,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 	<h1>Jeff&rsquo;s Color Contrast Analyzer</h1>
 	<form method="post">
 		<div class="format-list-wrapper">
-			<p class="format-list-title">Analyze color contrast between multiple colors, up to <?php echo MAX_COLORS; ?> colors total, in any of these formats:</p>
-			<input type="checkbox" id="format-toggle" class="format-toggle">
-			<label for="format-toggle" class="format-toggle-label"></label>
-			<ul id="format-list" class="format-list">
-				<li><strong>Hex</strong>: #FFF, #FFFFFF, #FFFA (with alpha), #FFFFFFAA (with alpha)</li>
-				<li><strong>RGB and RGBA</strong>: rgb(255, 255, 255) and rgba(255, 255, 255, 0.5)</li>
-				<li><strong>HSL and HSLA</strong>: hsl(360, 100%, 100%) and hsla(180deg 15.38% 94.9%, 0.5)</li>
-				<li>CSS <strong>Named Colors</strong>, like &ldquo;black&rdquo;, &ldquo;white&rdquo;, or &ldquo;coral&rdquo;</li>
-				<li><strong>HSB</strong>: hsb(240, 100%, 100%) and hsb(120, 50, 75)</li>
-				<li><strong>HWB</strong>: hwb(12 50% 0%) and hwb(0 100% 0% / 50%);</li>
-				<li><strong>Lab</strong>: lab(80% 100 50) and lab(50% 40 59.5 / 0.5)</li>
-				<li><strong>LCH</strong>: lch(50% 70 200) and lch(52.2345% 72.2 56.2 / .5)</li>
-				<li><strong>Oklab</strong>: oklab(59% 0.1 0.1) and oklab(59% 0.1 0.1 / 0.5)</li>
-				<li><strong>Oklch</strong>: oklch(60% 0.15 50) and oklch(60% 0.15 50 / 0.5)</li>
-				<li><strong>CMYK</strong>: cmyk(100%, 0%, 0%, 0%) and cmyk(0, 100, 100, 0)</li>
-				<li>CSS syntax is also accepted (e.g., &ldquo;color: #FFF;&rdquo; or &ldquo;background-color: rgb(255, 0, 0);&rdquo;)</li>
-				<li>Note: <code>from</code>, <code>calc()</code>, and <code>color()</code> are not supported.</li>
-			</ul>
+			<p>Analyze color contrast between multiple colors, up to <?php echo MAX_COLORS; ?> colors total, in any of these formats:</p>
+			<p>Hex, RGB and RGBA, HSL and HSLA, CSS Named Colors, HSB, HWB, Lab, LCH, Oklab, Oklch, CMYK. CSS syntax is also accepted (e.g., &ldquo;color: #FFF;&rdquo; or &ldquo;background-color: rgb(255, 0, 0);&rdquo;)</p>
+			<p>Note: <code>from</code>, <code>calc()</code>, and <code>color()</code> are not supported. <a href="https://contrast.jefftml.com/help.html#color-formats">More details and specifications</a> are included in the help documentation.</p>
 		</div>
 		<p>Labels can be added to a color by placing the label before a colon, like &ldquo;link: #2C5491&rdquo;</p>
 		<label for="colors">Input your colors:<br><textarea name="colors" id="colors" required autocapitalize="off" autocomplete="off" spellcheck="false" placeholder="Enter colors here, 
 one color per line"><?= isset($_POST['colors']) ? htmlspecialchars($_POST['colors']) : '' ?></textarea></label>
 		
 		<div style="margin: 1em 0;">
-			<fieldset style="border: 1px solid #ccc; padding: 1em;">
-				<legend style="font-weight: bold; padding: 0 0.5em;">Contrast Method:</legend>
+			<fieldset style="margin: 0; border: 1px solid hsla(0, 0%, 50%, 0.3); padding: 1em; max-width: 400px;">
+				<legend style="padding: 0 0.5em;">Contrast Method:</legend>
 				<label style="display: block; margin: 0.5em 0;">
-					<input type="radio" name="contrast_method" value="wcag" <?= (!isset($contrast_method) || $contrast_method === 'wcag') ? 'checked' : '' ?>>
-					<strong>WCAG</strong> - Traditional contrast ratio (current standard)
+					<input type="radio" name="contrast_method" value="wcag" <?= (!isset($contrast_method) || $contrast_method === 'wcag') ? 'checked' : '' ?>> WCAG - current standard
 				</label>
 				<label style="display: block; margin: 0.5em 0;">
-					<input type="radio" name="contrast_method" value="apca" <?= (isset($contrast_method) && $contrast_method === 'apca') ? 'checked' : '' ?>>
-					<strong>APCA</strong> - Advanced Perceptual Contrast Algorithm (future standard)
+					<input type="radio" name="contrast_method" value="apca" <?= (isset($contrast_method) && $contrast_method === 'apca') ? 'checked' : '' ?>> APCA</strong> - potential future standard
 				</label>
 			</fieldset>
 		</div>
-		
-		<br>
 		<button type="submit">Calculate Contrast</button>
 	</form>
 <?php if (!empty($parsed_colors)): ?>
