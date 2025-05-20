@@ -64,7 +64,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 	<form method="post">
 		<div class="format-list-wrapper">
 			<p>Analyze color contrast between multiple colors, up to <?php echo MAX_COLORS; ?> colors total, in any of these formats:</p>
-			<p>Hex, RGB and RGBA, HSL and HSLA, CSS Named Colors, HSB, HWB, Lab, LCH, Oklab, Oklch, CMYK. CSS syntax is also accepted (e.g., &ldquo;color: #FFF;&rdquo; or &ldquo;background-color: rgb(255, 0, 0);&rdquo;)</p>
+			<p>Hex, RGB and RGBA, HSL and HSLA, CSS Named Colors, HSB, HWB, Lab, LCH, Oklab, Oklch, CMYK. CSS syntax is also accepted <code>color: #FFF;</code> or <code>background-color: rgb(255, 0, 0);</code>.</p>
 			<p>Note: <code>from</code>, <code>calc()</code>, and <code>color()</code> are not supported. <a href="https://contrast.jefftml.com/help.html#color-formats">More details and specifications</a> are included in the help documentation.</p>
 		</div>
 		<p>Labels can be added to a color by placing the label before a colon, like &ldquo;link: #2C5491&rdquo;</p>
