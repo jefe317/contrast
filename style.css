@@ -102,54 +102,6 @@ ul.topnav li.right {
 	}
 }
 
-/* format list */
-
-.format-list-wrapper {
-	position: relative;
-}
-
-.format-list-title, .format-toggle {
-	display: none;
-}
-
-.format-toggle-label {
-	cursor: pointer;
-	padding: 0.5em;
-	border: 1px solid #ccc;
-	border-radius: 4px;
-	display: block;
-	margin-bottom: 0.5em;
-}
-
-.format-toggle-label::after {
-	content: "Analyze color contrast between multiple colors, up to 50 colors total, in any of these formats: (click to expand)";
-}
-
-.format-list {
-	display: none;
-	border: 1px solid #ccc;
-	border-radius: 4px;
-	margin-bottom: 1.5em;
-}
-
-.format-toggle:checked ~ .format-list {
-	display: block;
-}
-
-@media (min-width: 800px) {
-	.format-list-title {
-		display: block;
-	}
-	.format-toggle-label {
-		display: none;
-	}
-	.format-list {
-		display: block;
-		border: none;
-		margin-bottom: 1em;
-	}
-}
-
 .content {
 	margin: 20px auto;
 	max-width: 625px;
@@ -257,10 +209,6 @@ li {
 
 .footer {
 	padding-top: 1em;
-}
-
-.format-list {
-	margin: 1em 0;
 }
 
 .warning-list {

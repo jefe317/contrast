@@ -62,12 +62,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 	<div class="content">
 	<h1>Jeff&rsquo;s Color Contrast Analyzer</h1>
 	<form method="post">
-		<div class="format-list-wrapper">
-			<p>Analyze color contrast between multiple colors, up to <?php echo MAX_COLORS; ?> colors total, in any of these formats:</p>
-			<p>Hex, RGB and RGBA, HSL and HSLA, CSS Named Colors, HSB, HWB, Lab, LCH, Oklab, Oklch, CMYK. CSS syntax is also accepted <code>color: #FFF;</code> or <code>background-color: rgb(255, 0, 0);</code>.</p>
-			<p>Note: <code>from</code>, <code>calc()</code>, and <code>color()</code> are not supported. <a href="https://contrast.jefftml.com/help.html#color-formats">More details and specifications</a> are included in the help documentation.</p>
-		</div>
-		<p>Labels can be added to a color by placing the label before a colon, like &ldquo;link: #2C5491&rdquo;</p>
+		<p>Analyze color contrast between multiple colors, up to <?php echo MAX_COLORS; ?> colors total, in tons of formats. Hex, RGB and RGBA, HSL and HSLA, CSS Named Colors, HSB, HWB, Lab, LCH, Oklab, Oklch, and CMYK are fully supported. CSS syntax is also accepted <code>color: #FFF</code> or <code>background-color: rgb(255, 0, 0);</code>. <a href="https://contrast.jefftml.com/help.html#color-formats">More details and specifications</a> are included in the help documentation.</p>
+		<p><code>from</code>, <code>calc()</code>, and <code>color()</code> are not supported. Labels can be added to a color by placing the label before a colon, like <code>link: #2C5491</code></p>
 		<label for="colors">Input your colors:<br><textarea name="colors" id="colors" required autocapitalize="off" autocomplete="off" spellcheck="false" placeholder="Enter colors here, 
 one color per line"><?= isset($_POST['colors']) ? htmlspecialchars($_POST['colors']) : '' ?></textarea></label>
 		
@@ -78,7 +74,7 @@ one color per line"><?= isset($_POST['colors']) ? htmlspecialchars($_POST['color
 					<input type="radio" name="contrast_method" value="wcag" <?= (!isset($contrast_method) || $contrast_method === 'wcag') ? 'checked' : '' ?>> WCAG - current standard
 				</label>
 				<label style="display: block; margin: 0.5em 0;">
-					<input type="radio" name="contrast_method" value="apca" <?= (isset($contrast_method) && $contrast_method === 'apca') ? 'checked' : '' ?>> APCA</strong> - potential future standard
+					<input type="radio" name="contrast_method" value="apca" <?= (isset($contrast_method) && $contrast_method === 'apca') ? 'checked' : '' ?>> APCA</strong> - potential standard
 				</label>
 			</fieldset>
 		</div>
@@ -320,7 +316,7 @@ if (!empty($parsed_colors)):
 					<?php if ($current_method === 'wcag'): ?>
 						<?= $display_value ?><br><?= $level ?>
 					<?php else: ?>
-						Lc <?= $display_value ?><br><?= explode(' - ', $level)[0] ?>
+						Lc&nbsp;<?= $display_value ?><br><?= explode(' - ', $level)[0] ?>
 					<?php endif; ?>
 				</div>
 				</div>

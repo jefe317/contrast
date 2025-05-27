@@ -3,7 +3,7 @@
 require_once 'functions.php';
 require_once 'parse_colors.php';
 
-function generateColorReport($colors) {
+function generateColorReport($colors, $contrast_method = 'wcag') {
 	if (!empty($colors)) {
 		$result = processColorForm($colors);
 		$parsed_colors = $result['parsed_colors'];
@@ -15,7 +15,7 @@ function generateColorReport($colors) {
 		date_default_timezone_set('America/Chicago');
 		$datetime = date('Y-m-d h:i:s A');
 		$file = 'stats.txt';
-		$value = count($parsed_colors)." colors";
+		$value = count($parsed_colors)." colors, ".$contrast_method." method";
 		// Create the log entry
 		$logEntry = $datetime . ", " . $value . ", download" . PHP_EOL;
 		file_put_contents($file, $logEntry, FILE_APPEND);
