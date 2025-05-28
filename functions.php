@@ -460,6 +460,43 @@ function reverseAPCA($contrast = 0, $knownY = 1.0, $knownType = 'bg', $returnAs 
 	}
 }
 
+/**
+ * Get combined WCAG and APCA level for "Best of Both" mode
+ * Maps WCAG AAA/Perfect, AA/Good+, AA Large/Fair+ as equivalent levels
+ */
+function getCombinedLevel($wcag_level, $apca_level) {
+    $apca_base = explode(' - ', $apca_level)[0];
+    
+    // Tier 1: AAA + Perfect
+    if ($wcag_level === 'AAA' && $apca_base === 'Perfect') {
+        return 'Excellent';
+    }
+    
+    // Tier 2: AA + (Good or better)
+    if ($wcag_level === 'AA' && in_array($apca_base, ['Perfect', 'Excellent', 'Good'])) {
+        return 'Good';
+    }
+    
+    // Tier 3: AA Large + (Fair or better)
+    if ($wcag_level === 'AA Large' && in_array($apca_base, ['Perfect', 'Excellent', 'Good', 'Fair'])) {
+        return 'Fair';
+    }
+    
+    return 'Fail';
+}
+
+/**
+ * Get display name for combined levels
+ */
+function getCombinedLevelDisplay($level) {
+    switch ($level) {
+        case 'Excellent': return 'Excellent - AAA + Perfect';
+        case 'Good': return 'Good - AA + Good+';
+        case 'Fair': return 'Fair - AA Large + Fair+';
+        default: return 'Fail - Below thresholds';
+    }
+}
+
 function getCopyrightYears($foundedYear) {
 	$currentYear = date('Y');
 	$site = "&copy; <a href=\"https://jefftml.com\">Jeff Lange</a>";
