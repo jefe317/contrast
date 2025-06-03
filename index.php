@@ -168,9 +168,10 @@ if (!empty($parsed_colors)):
 						<th>Good ≥ 60</th>
 						<th>Fair ≥ 45</th>
 					<?php else: // both ?>
-						<th>Excellent<br>AAA & Perfect</th>
-						<th>Good<br>AA & Good+</th>
-						<th>Fair<br>AA Large & Fair+</th>
+						<th>Perfect<br>APCA ≥90 & WCAG ≥10</th>
+						<th>Excellent<br>APCA ≥75 & WCAG ≥7</th>
+						<th>Good<br>APCA ≥60 & WCAG ≥4.5</th>
+						<th>Fair<br>APCA ≥45 & WCAG ≥3</th>
 					<?php endif; ?>
 				</tr>
 			</thead>
@@ -217,7 +218,7 @@ if (!empty($parsed_colors)):
 							$apca_contrast = getAPCAContrast($bg['rgb'], $fg['rgb'], $bg['alpha'], $fg['alpha']);
 							$apca_level = getAPCALevel($apca_contrast);
 							
-							$combined_level = getCombinedLevel($wcag_level, $apca_level);
+							$combined_level = getCombinedLevel($wcag_contrast, $apca_contrast);
 							
 							if ($combined_level !== 'Fail') {
 								$combinations[] = [
@@ -333,7 +334,7 @@ if (!empty($parsed_colors)):
 							<?php endforeach; ?>
 						<?php endif; ?>
 					<?php else: ?>
-						<td colspan="<?= $current_method === 'both' ? '3' : ($current_method === 'wcag' ? '3' : '4') ?>" style="text-align: center; color: <?= $bg_text_lum > 0.5 ? '#000000' : '#FFFFFF' ?>">
+						<td colspan="<?= $current_method === 'wcag' ? '3' : '4' ?>" style="text-align: center; color: <?= $bg_text_lum > 0.5 ? '#000000' : '#FFFFFF' ?>">
 							<?php if ($current_method === 'wcag'): ?>
 								No valid color combinations found (all contrast ratios below 3.0)
 							<?php elseif ($current_method === 'apca'): ?>
@@ -384,7 +385,7 @@ if (!empty($parsed_colors)):
 				$apca_contrast = getAPCAContrast($bg_data['rgb'], $fg_data['rgb'], $bg_data['alpha'], $fg_data['alpha']);
 				$apca_level = getAPCALevel($apca_contrast);
 				
-				$combined_level = getCombinedLevel($wcag_level, $apca_level);
+				$combined_level = getCombinedLevel($wcag_contrast, $apca_contrast);
 			}
 		?>
 			<td style="background-color: <?= htmlspecialchars(getCssColor($bg_color)) ?>;">

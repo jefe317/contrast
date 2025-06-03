@@ -462,27 +462,37 @@ function reverseAPCA($contrast = 0, $knownY = 1.0, $knownType = 'bg', $returnAs 
 
 /**
  * Get combined WCAG and APCA level for "Best of Both" mode
- * Maps WCAG AAA/Perfect, AA/Good+, AA Large/Fair+ as equivalent levels
+ * Uses contrast values with mapped thresholds instead of named categories
  */
-function getCombinedLevel($wcag_level, $apca_level) {
-    $apca_base = explode(' - ', $apca_level)[0];
-    
-    // Tier 1: AAA + Perfect
-    if ($wcag_level === 'AAA' && $apca_base === 'Perfect') {
-        return 'Excellent';
-    }
-    
-    // Tier 2: AA + (Good or better)
-    if ($wcag_level === 'AA' && in_array($apca_base, ['Perfect', 'Excellent', 'Good'])) {
-        return 'Good';
-    }
-    
-    // Tier 3: AA Large + (Fair or better)
-    if ($wcag_level === 'AA Large' && in_array($apca_base, ['Perfect', 'Excellent', 'Good', 'Fair'])) {
-        return 'Fair';
-    }
-    
-    return 'Fail';
+function getCombinedLevel($wcag_contrast, $apca_contrast) {
+	$apca_abs = abs($apca_contrast);
+	
+	// Tier 1: Perfect (APCA ≥90 + WCAG ≥10)
+	if ($apca_abs >= 90 && $wcag_contrast >= 10) {
+		return 'Perfect';
+	}
+	
+	// Tier 1: Excellent (APCA ≥75 + WCAG ≥7)
+	if ($apca_abs >= 75 && $wcag_contrast >= 7) {
+		return 'Excellent';
+	}
+	
+	// Tier 2: Good (APCA ≥60 + WCAG ≥4.5)
+	if ($apca_abs >= 60 && $wcag_contrast >= 4.5) {
+		return 'Good';
+	}
+	
+	// Tier 3: Fair (APCA ≥45 + WCAG ≥3)
+	if ($apca_abs >= 45 && $wcag_contrast >= 3) {
+		return 'Fair';
+	}
+	
+	// Tier 4: Poor (APCA ≥30 + WCAG ≥1.7)
+	if ($apca_abs >= 30 && $wcag_contrast >= 1.7) {
+		return 'Poor';
+	}
+
+	return 'Fail';
 }
 
 /**

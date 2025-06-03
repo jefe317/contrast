@@ -43,9 +43,10 @@ $current_method = $contrast_method ?? 'wcag';
 						<th>Good ≥ 60</th>
 						<th>Fair ≥ 45</th>
 					<?php else: // both ?>
-						<th>Excellent<br>AAA + Perfect</th>
-						<th>Good<br>AA + Good+</th>
-						<th>Fair<br>AA Large + Fair+</th>
+						<th>Perfect<br>APCA ≥90 & WCAG ≥10</th>
+						<th>Excellent<br>APCA ≥75 & WCAG ≥7</th>
+						<th>Good<br>APCA ≥60 & WCAG ≥4.5</th>
+						<th>Fair<br>APCA ≥45 & WCAG ≥3</th>
 					<?php endif; ?>
 				</tr>
 			</thead>
@@ -212,7 +213,7 @@ $current_method = $contrast_method ?? 'wcag';
 					<?php else: ?>
 						<td colspan="<?= $current_method === 'both' ? '3' : ($current_method === 'wcag' ? '3' : '4') ?>" style="text-align: center; color: <?= $bg_text_lum > 0.5 ? '#000000' : '#FFFFFF' ?>">
 							<?php if ($current_method === 'wcag'): ?>
-								No valid color combinations found (all contrast ratios below 3.0)
+								No valid color combinations found (all WCAG ratios below 3.0)
 							<?php elseif ($current_method === 'apca'): ?>
 								No valid color combinations found (all APCA values below 45)
 							<?php else: ?>
