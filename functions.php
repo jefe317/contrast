@@ -332,15 +332,15 @@ function getAPCALevel($contrast) {
 	$absContrast = abs($contrast);
 	
 	if ($absContrast >= 90) {
-		return 'Perfect - LCf 90+ (All text)';
+		return 'Perfect - Lc 90+ (All text)';
 	} elseif ($absContrast >= 75) {
-		return 'Excellent - LCf 75+ (Body text)';
+		return 'Excellent - Lc 75+ (Body text)';
 	} elseif ($absContrast >= 60) {
-		return 'Good - LCf 60+ (Large text)';
+		return 'Good - Lc 60+ (Large text)';
 	} elseif ($absContrast >= 45) {
-		return 'Fair - LCf 45+ (Large bold text)';
+		return 'Fair - Lc 45+ (Large bold text)';
 	} elseif ($absContrast >= 30) {
-		return 'Poor - LCf 30+ (Spot text only)';
+		return 'Poor - Lc 30+ (Spot text only)';
 	} else {
 		return 'Fail - Insufficient contrast';
 	}
@@ -493,18 +493,6 @@ function getCombinedLevel($wcag_contrast, $apca_contrast) {
 	}
 
 	return 'Fail';
-}
-
-/**
- * Get display name for combined levels
- */
-function getCombinedLevelDisplay($level) {
-    switch ($level) {
-        case 'Excellent': return 'Excellent - AAA + Perfect';
-        case 'Good': return 'Good - AA + Good+';
-        case 'Fair': return 'Fair - AA Large + Fair+';
-        default: return 'Fail - Below thresholds';
-    }
 }
 
 function getCopyrightYears($foundedYear) {

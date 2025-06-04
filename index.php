@@ -168,10 +168,10 @@ if (!empty($parsed_colors)):
 						<th>Good ≥ 60</th>
 						<th>Fair ≥ 45</th>
 					<?php else: // both ?>
-						<th>Perfect<br>APCA ≥90 & WCAG ≥10</th>
-						<th>Excellent<br>APCA ≥75 & WCAG ≥7</th>
-						<th>Good<br>APCA ≥60 & WCAG ≥4.5</th>
-						<th>Fair<br>APCA ≥45 & WCAG ≥3</th>
+						<th>Perfect<br>WCAG&nbsp;≥10&nbsp;&<br>APCA&nbsp;≥90</th>
+						<th>Excellent<br>WCAG&nbsp;≥7&nbsp;&<br>APCA&nbsp;≥75</th>
+						<th>Good<br>WCAG&nbsp;≥4.5&nbsp;&<br>APCA&nbsp;≥60</th>
+						<th>Fair<br>WCAG&nbsp;≥3&nbsp;&<br>APCA&nbsp;≥45</th>
 					<?php endif; ?>
 				</tr>
 			</thead>
@@ -283,6 +283,7 @@ if (!empty($parsed_colors)):
 					} else { // both
 						// Group by combined level
 						$combined_groups = [
+							'Perfect' => [],
 							'Excellent' => [],
 							'Good' => [],
 							'Fair' => []
@@ -301,7 +302,8 @@ if (!empty($parsed_colors)):
 							});
 						}
 
-						$has_valid_combinations = !empty($combined_groups['Excellent']) || 
+						$has_valid_combinations = !empty($combined_groups['Perfect']) || 
+												!empty($combined_groups['Excellent']) || 
 												!empty($combined_groups['Good']) || 
 												!empty($combined_groups['Fair']);
 					}
@@ -327,7 +329,7 @@ if (!empty($parsed_colors)):
 								<?php endforeach; ?></td>
 							<?php endforeach; ?>
 						<?php else: // both ?>
-							<?php foreach (['Excellent', 'Good', 'Fair'] as $level): ?>
+							<?php foreach (['Perfect', 'Excellent', 'Good', 'Fair'] as $level): ?>
 								<td><?php foreach ($combined_groups[$level] as $combo): ?>
 									<div style="color: <?= htmlspecialchars(getCssColor($combo['color'])) ?>;"><?= htmlspecialchars($combo['color']) ?>&nbsp;(<?= number_format($combo['wcag_contrast'], 2) ?>)&nbsp;(Lc&nbsp;<?= number_format($combo['apca_contrast'], 1) ?>)</div>
 								<?php endforeach; ?></td>
