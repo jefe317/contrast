@@ -173,6 +173,46 @@ textarea {
 	height: 100px;
 }
 
+/* Hide the checkbox */
+.toggle-checkbox {
+	display: none;
+}
+
+/* Style the question mark button */
+.info-toggle {
+	display: inline-block;
+	width: 20px;
+	height: 20px;
+	background-color: #007bff;
+	color: white;
+	border-radius: 50%;
+	text-align: center;
+	line-height: 20px;
+	cursor: pointer;
+	font-size: 12px;
+	font-weight: bold;
+	margin-left: 8px;
+	user-select: none;
+}
+
+.info-toggle:hover {
+	background-color: #0056b3;
+}
+
+/* Hide the info row by default */
+.info-row {
+	display: none;
+}
+
+/* Show the info row when checkbox is checked */
+.toggle-checkbox:checked + table .info-row {
+	display: table-row;
+}
+
+/* Style the info row */
+.info-row td {
+}
+
 .checkered {
 	background: conic-gradient(hsla(0, 0%, 50%, 20%) 90deg, transparent 90deg 180deg, hsla(0, 0%, 50%, 20%) 180deg 270deg, transparent 270deg);
 	background-repeat: repeat;

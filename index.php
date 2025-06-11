@@ -154,6 +154,7 @@ if (!empty($parsed_colors)):
 	?>
 	<div class="table-wrapper">
 		<h2>Summary of Compatible Color Combinations (<?= $current_method === 'both' ? 'Both' : strtoupper($current_method) ?>)</h2>
+		<input type="checkbox" id="toggle-info" class="toggle-checkbox">
 		<table class="checkered">
 			<thead>
 				<tr>
@@ -161,18 +162,24 @@ if (!empty($parsed_colors)):
 					<?php if ($current_method === 'wcag'): ?>
 						<th>AAA ≥ 7.0<br>Best</th>
 						<th>AA Normal ≥ 4.5<br>Second Best</th>
-						<th>AA Large ≥ 3.0<br>Third Best</th>
+						<th>AA Large ≥ 3.0 <label for="toggle-info" class="info-toggle">?</label><br>Third Best</th>
 					<?php elseif ($current_method === 'apca'): ?>
 						<th>Perfect ≥ 90</th>
 						<th>Excellent ≥ 75</th>
 						<th>Good ≥ 60</th>
-						<th>Fair ≥ 45</th>
+						<th>Fair ≥ 45 <label for="toggle-info" class="info-toggle">?</label></th>
 					<?php else: // both ?>
 						<th>Perfect<br>WCAG&nbsp;≥10&nbsp;&<br>APCA&nbsp;≥90</th>
 						<th>Excellent<br>WCAG&nbsp;≥7&nbsp;&<br>APCA&nbsp;≥75</th>
 						<th>Good<br>WCAG&nbsp;≥4.5&nbsp;&<br>APCA&nbsp;≥60</th>
-						<th>Fair<br>WCAG&nbsp;≥3&nbsp;&<br>APCA&nbsp;≥45</th>
+						<th>Fair <label for="toggle-info" class="info-toggle">?</label><br>WCAG&nbsp;≥3&nbsp;&<br>APCA&nbsp;≥45</th>
 					<?php endif; ?>
+				</tr>
+				<tr class="info-row">
+					<td></td>
+					<td colspan="<?= $current_method === 'wcag' ? '3' : '4' ?>">
+						This is the hidden information row that explains the scoring criteria or any additional details you want to show.
+					</td>
 				</tr>
 			</thead>
 			<tbody>
