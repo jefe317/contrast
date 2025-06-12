@@ -177,8 +177,16 @@ if (!empty($parsed_colors)):
 				</tr>
 				<tr class="info-row">
 					<td></td>
-					<td colspan="<?= $current_method === 'wcag' ? '3' : '4' ?>">
-						This is the hidden information row that explains the scoring criteria or any additional details you want to show.
+						<?php if ($current_method === 'wcag'): ?>
+							<td>16px (12pt) or larger</td>
+							<td>16px (12pt) or larger</td>
+							<td>18px (13pt) or larger</td>
+						<?php else: ?>
+							<td>16px (12pt) or larger</td>
+							<td>16px (12pt) or larger</td>
+							<td>16px (12pt) or larger</td>
+							<td>18px (13pt) or larger</td>
+						<?php endif; ?>
 					</td>
 				</tr>
 			</thead>
@@ -398,6 +406,7 @@ if (!empty($parsed_colors)):
 			}
 		?>
 			<td style="background-color: <?= htmlspecialchars(getCssColor($bg_color)) ?>;">
+				<!-- color value hover / alt text? -->
 				<div class="sample-text" style="color: <?= htmlspecialchars(getCssColor($fg_color)) ?>;">Sample
 				<div style="font-size: 0.8em;">
 					<?php if ($current_method === 'wcag'): ?>
