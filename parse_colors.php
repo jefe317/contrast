@@ -156,7 +156,7 @@ function parseColor($color) {
 		
 		return oklabToRgb($lightness, $a, $b, $alpha);
 
-	} elseif (preg_match('/^oklch\(\s*(\d*\.?\d+)%?\s+(\d*\.?\d+)\s+(\d*\.?\d+)(?:\s*\/\s*([\d.]+)%?)?\s*\)$/i', $color, $matches)) {
+	} elseif (preg_match('/^oklch\(\s*(\d*\.?\d+)%?\s+(\d*\.?\d+)\s+(\d*\.?\d+)(?:\s*\/\s*([\d.]+%?))?\s*\)$/i', $color, $matches)) {
 		// Extract values
 		$lightness = floatval($matches[1]);
 		$chroma = floatval($matches[2]);
@@ -165,7 +165,7 @@ function parseColor($color) {
 		// Handle alpha: may be null, a number, or a percentage
 		$alpha = 1;
 		if (isset($matches[4])) {
-			$alphaStr = trim($matches[4]);
+			$alphaStr = $matches[4];
 			if (str_ends_with($alphaStr, '%')) {
 				$alpha = floatval(rtrim($alphaStr, '%')) / 100;
 			} else {
@@ -173,12 +173,12 @@ function parseColor($color) {
 			}
 		}
 
-		// If lightness wasn't specified with %, scale if in 0–1 range
+		// If lightness wasn't specified with %, scale it to 0–100 if it’s ≤ 1
 		if (strpos($matches[1], '%') === false && $lightness <= 1) {
 			$lightness *= 100;
 		}
 
-		// Convert lightness to 0–1
+		// Normalize to 0–1
 		$lightness = $lightness / 100;
 
 		return oklchToRgb($lightness, $chroma, $hue, $alpha);
