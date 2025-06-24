@@ -50,7 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 	<link rel="icon" type="image/png" sizes="32x32" href="https://contrast.jefftml.com/favicon-32x32.png">
 	<link rel="icon" type="image/png" sizes="16x16" href="https://contrast.jefftml.com/favicon-16x16.png">
 	<link rel="manifest" href="https://contrast.jefftml.com/site.webmanifest">
-	<meta name="description" content="Calculate contrast ratios for multiple colors for WCAG and APCA guidelines. Hex, RGB, HSL, and all CSS color types supported. Download reports for offline use for free.">
+	<meta name="description" content="Calculate contrast for multiple colors in WCAG and APCA guidelines. Hex, RGB, HSL, and all CSS color types supported. Download reports for offline use for free.">
 </head>
 <body>
 	<input type="checkbox" id="toggle" class="menu-toggle">

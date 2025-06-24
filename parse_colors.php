@@ -36,7 +36,7 @@ function parseColor($color) {
 
 	// Validate hex format length before processing
 	if (preg_match('/^#?[A-Fa-f0-9]+$/', $color) && strlen(ltrim($color, '#')) != 3 && strlen(ltrim($color, '#')) != 4 && strlen(ltrim($color, '#')) != 6 && strlen(ltrim($color, '#')) != 8) {
-	    return false;
+		return false;
 	}
 
 	// Process valid hex colors
@@ -88,11 +88,11 @@ function parseColor($color) {
 		];
 		return array_merge($rgb, [$alpha]);
 	} elseif (preg_match('/^hsla?\(\s*([\d.]+)(?:deg|turn)?(?:(?:\s+|\s*,\s*)|\s+)(\d+\.?\d*)%(?:\s+|\s*,\s*)(\d+\.?\d*)%(?:\s*(?:\/|\s*,)\s*([\d.]+%?))?\s*\)$/', $color, $matches)) {
-        $alpha = isset($matches[4]) ? (str_ends_with($matches[4], '%') ? 
-            floatval(rtrim($matches[4], '%')) / 100 : 
-            floatval($matches[4])) : 1;
-        $rgb = hslToRgb($matches[1], floatval($matches[2]), floatval($matches[3]));
-        return array_merge($rgb, [$alpha]);
+		$alpha = isset($matches[4]) ? (str_ends_with($matches[4], '%') ? 
+			floatval(rtrim($matches[4], '%')) / 100 : 
+			floatval($matches[4])) : 1;
+		$rgb = hslToRgb($matches[1], floatval($matches[2]), floatval($matches[3]));
+		return array_merge($rgb, [$alpha]);
 	} elseif (preg_match('/^lab\(\s*(\d+\.?\d*)%?\s+(-?\d+\.?\d*)\s+(-?\d+\.?\d*)(?:\s*\/\s*([\d.]+))?\s*\)$/', $color, $matches)) {
 		return array_merge(labToRgb(
 			floatval($matches[1]),
@@ -156,22 +156,34 @@ function parseColor($color) {
 		
 		return oklabToRgb($lightness, $a, $b, $alpha);
 
-	} elseif (preg_match('/^oklch\(\s*(\d*\.?\d+)%?\s+(\d*\.?\d+)\s+(\d*\.?\d+)(?:\s*\/\s*([\d.]+))?\s*\)$/', $color, $matches)) {
+	} elseif (preg_match('/^oklch\(\s*(\d*\.?\d+)%?\s+(\d*\.?\d+)\s+(\d*\.?\d+)(?:\s*\/\s*([\d.]+)%?)?\s*\)$/i', $color, $matches)) {
 		// Extract values
 		$lightness = floatval($matches[1]);
 		$chroma = floatval($matches[2]);
 		$hue = floatval($matches[3]);
-		$alpha = isset($matches[4]) ? floatval($matches[4]) : 1;
-		
-		// If lightness wasn't specified with %, scale it to 0-100 range if it's in 0-1 range
+
+		// Handle alpha: may be null, a number, or a percentage
+		$alpha = 1;
+		if (isset($matches[4])) {
+			$alphaStr = trim($matches[4]);
+			if (str_ends_with($alphaStr, '%')) {
+				$alpha = floatval(rtrim($alphaStr, '%')) / 100;
+			} else {
+				$alpha = floatval($alphaStr);
+			}
+		}
+
+		// If lightness wasn't specified with %, scale if in 0–1 range
 		if (strpos($matches[1], '%') === false && $lightness <= 1) {
 			$lightness *= 100;
 		}
-		// Convert to 0-1 range
+
+		// Convert lightness to 0–1
 		$lightness = $lightness / 100;
-		
+
 		return oklchToRgb($lightness, $chroma, $hue, $alpha);
 	}
+
 	return false;
 }
 ?>
