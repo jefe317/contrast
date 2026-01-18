@@ -252,7 +252,6 @@ function sRGBtoY($rgb) {
 /**
  * Calculate APCA contrast value between two colors
  * Based on the APCA algorithm by Andrew Somers (version 0.1.9 for WCAG 3)
- * Updated to match the JavaScript reference implementation
  * 
  * @param array $bg RGB background color array [r,g,b]
  * @param array $text RGB text color array [r,g,b]

@@ -50,7 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 	<link rel="icon" type="image/png" sizes="32x32" href="https://contrast.jefftml.com/favicon-32x32.png">
 	<link rel="icon" type="image/png" sizes="16x16" href="https://contrast.jefftml.com/favicon-16x16.png">
 	<link rel="manifest" href="https://contrast.jefftml.com/site.webmanifest">
-	<meta name="description" content="Calculate contrast for multiple colors in WCAG and APCA guidelines. Hex, RGB, HSL, and all CSS color types supported. Download reports for offline use for free.">
+	<meta name="description" content="Calculate contrast ratios for multiple colors for WCAG and APCA guidelines. Hex, RGB, HSL, and all CSS color types supported. Download reports for offline use for free.">
 </head>
 <body>
 	<input type="checkbox" id="toggle" class="menu-toggle">
@@ -145,7 +145,16 @@ if (!empty($parsed_colors)):
 	date_default_timezone_set('America/Chicago');
 	$datetime = date('Y-m-d h:i:s A');
 	$file = 'stats.txt';
-	$value = count($parsed_colors)." colors, ".($contrast_method ?? 'wcag')." method, ";
+
+	// Get IP address (handles proxies too)
+	$ip_address = $_SERVER['HTTP_X_FORWARDED_FOR'] ?? $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+
+	// Get the actual colors (extract just the color values, not labels)
+	$color_list = array_keys($parsed_colors);
+	$colors_string = implode('|', array_map('htmlspecialchars', $color_list));
+
+	$value = count($parsed_colors)." colors, ".($contrast_method ?? 'wcag')." method, IP: ".$ip_address.", Colors: ".$colors_string;
+
 	// Create the log entry
 	$logEntry = $datetime . ", " . $value . PHP_EOL;
 	file_put_contents($file, $logEntry, FILE_APPEND);
@@ -154,7 +163,6 @@ if (!empty($parsed_colors)):
 	?>
 	<div class="table-wrapper">
 		<h2>Summary of Compatible Color Combinations (<?= $current_method === 'both' ? 'Both' : strtoupper($current_method) ?>)</h2>
-		<input type="checkbox" id="toggle-info" class="toggle-checkbox">
 		<table class="checkered">
 			<thead>
 				<tr>
@@ -162,32 +170,18 @@ if (!empty($parsed_colors)):
 					<?php if ($current_method === 'wcag'): ?>
 						<th>AAA ≥ 7.0<br>Best</th>
 						<th>AA Normal ≥ 4.5<br>Second Best</th>
-						<th>AA Large ≥ 3.0 <label for="toggle-info" class="info-toggle">?</label><br>Third Best</th>
+						<th>AA Large ≥ 3.0<br>Third Best</th>
 					<?php elseif ($current_method === 'apca'): ?>
 						<th>Perfect ≥ 90</th>
 						<th>Excellent ≥ 75</th>
 						<th>Good ≥ 60</th>
-						<th>Fair ≥ 45 <label for="toggle-info" class="info-toggle">?</label></th>
+						<th>Fair ≥ 45</th>
 					<?php else: // both ?>
 						<th>Perfect<br>WCAG&nbsp;≥10&nbsp;&<br>APCA&nbsp;≥90</th>
 						<th>Excellent<br>WCAG&nbsp;≥7&nbsp;&<br>APCA&nbsp;≥75</th>
 						<th>Good<br>WCAG&nbsp;≥4.5&nbsp;&<br>APCA&nbsp;≥60</th>
-						<th>Fair <label for="toggle-info" class="info-toggle">?</label><br>WCAG&nbsp;≥3&nbsp;&<br>APCA&nbsp;≥45</th>
+						<th>Fair<br>WCAG&nbsp;≥3&nbsp;&<br>APCA&nbsp;≥45</th>
 					<?php endif; ?>
-				</tr>
-				<tr class="info-row">
-					<td></td>
-						<?php if ($current_method === 'wcag'): ?>
-							<td>16px (12pt) or larger</td>
-							<td>16px (12pt) or larger</td>
-							<td>18px (13pt) or larger</td>
-						<?php else: ?>
-							<td>16px (12pt) or larger</td>
-							<td>16px (12pt) or larger</td>
-							<td>16px (12pt) or larger</td>
-							<td>18px (13pt) or larger</td>
-						<?php endif; ?>
-					</td>
 				</tr>
 			</thead>
 			<tbody>
