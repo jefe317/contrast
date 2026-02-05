@@ -53,12 +53,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 	<meta name="description" content="Calculate contrast ratios for multiple colors for WCAG and APCA guidelines. Hex, RGB, HSL, and all CSS color types supported. Download reports for offline use for free.">
 </head>
 <body>
+	<nav aria-label="Main">
 	<input type="checkbox" id="toggle" class="menu-toggle">
 	<label for="toggle" class="menu-label">Menu</label>
 	<ul class="topnav controlled">
 		<li><a class="active" href="https://contrast.jefftml.com/">Home</a></li>
 		<li><a href="https://contrast.jefftml.com/help.html">Help</a></li>
 	</ul>
+	</nav>
+	<main>
 	<div class="content">
 	<h1>Jeff&rsquo;s Color Contrast Analyzer</h1>
 	<form method="post">
@@ -458,5 +461,6 @@ if (!empty($parsed_colors)):
 	</div>
 	<script src="https://contrast.jefftml.com/tablewidth.js"></script>
 	</div>
+	</main>
 </body>
 </html>
