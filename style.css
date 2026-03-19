@@ -178,27 +178,6 @@ textarea {
 	display: none;
 }
 
-/* Style the question mark button */
-.info-toggle {
-	display: inline-block;
-	width: 20px;
-	height: 20px;
-	background-color: #007bff;
-	color: white;
-	border-radius: 50%;
-	text-align: center;
-	line-height: 20px;
-	cursor: pointer;
-	font-size: 12px;
-	font-weight: bold;
-	margin-left: 8px;
-	user-select: none;
-}
-
-.info-toggle:hover {
-	background-color: #0056b3;
-}
-
 /* Hide the info row by default */
 .info-row {
 	display: none;
@@ -275,12 +254,6 @@ code {
 	word-break: break-all;
 }
 
-@media (prefers-color-scheme: dark) {
-	section {
-		border-top: 3px solid var(--dm-primary-400);
-	}
-}
-
 @media screen and (max-width: 700px) {
 	h1 {
 		font-size: 1.5rem;
@@ -339,5 +312,8 @@ code {
 	}
 	.timer {
 		color: var(--dm-text-secondary);
+	}
+	section {
+		border-top: 3px solid var(--dm-primary-400);
 	}
 }

@@ -11,31 +11,98 @@ require_once 'download_report.php';
 
 $parsed_colors = [];
 $invalid_colors = [];
+$advanced_mode = false;
+$light_mode_bg_colors = [];
+$light_mode_fg_colors = [];
+$dark_mode_bg_colors = [];
+$dark_mode_fg_colors = [];
+$light_mode_invalid = [];
+$dark_mode_invalid = [];
+$light_mode_excess = false;
+$dark_mode_excess = false;
+$light_mode_duplicates = [];
+$dark_mode_duplicates = [];
+$light_mode_semantic_duplicates = [];
+$dark_mode_semantic_duplicates = [];
 
 // Handle form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-	if (isset($_POST['download']) && !empty($_POST['colors'])) {
-		$colors = $_POST['colors'];
-		$contrast_method = $_POST['contrast_method'] ?? 'wcag';
-		$report = generateColorReport($colors, $contrast_method);
-		
-		$timestamp = date('Ymd-His');
-		$method_suffix = $contrast_method === 'apca' ? '-apca' : ($contrast_method === 'both' ? '-both' : '-wcag');
-		$filename = "color-contrast-report{$method_suffix}-{$timestamp}.html";
-		
-		header('Content-Type: text/html');
-		header('Content-Disposition: attachment; filename="' . $filename . '"');
-		
-		echo $report;
-		exit;
+	$advanced_mode = isset($_POST['advanced_mode']) && $_POST['advanced_mode'] === '1';
+	$contrast_method = $_POST['contrast_method'] ?? 'wcag';
+	
+	if (isset($_POST['download'])) {
+		if ($advanced_mode && (!empty($_POST['light_text']) || !empty($_POST['light_primary']) || !empty($_POST['light_bg']) || !empty($_POST['dark_text']) || !empty($_POST['dark_primary']) || !empty($_POST['dark_bg']))) {
+			// Advanced mode download
+			$advanced_result = processAdvancedModeColors(
+				$_POST['light_text'] ?? '',
+				$_POST['light_primary'] ?? '',
+				$_POST['light_bg'] ?? '',
+				$_POST['dark_text'] ?? '',
+				$_POST['dark_primary'] ?? '',
+				$_POST['dark_bg'] ?? ''
+			);
+			$light_mode_bg_colors = $advanced_result['light_mode']['background_colors'];
+			$light_mode_fg_colors = $advanced_result['light_mode']['foreground_colors'];
+			$dark_mode_bg_colors = $advanced_result['dark_mode']['background_colors'];
+			$dark_mode_fg_colors = $advanced_result['dark_mode']['foreground_colors'];
+			
+			// Generate combined report
+			$timestamp = date('Ymd-His');
+			$method_suffix = $contrast_method === 'apca' ? '-apca' : ($contrast_method === 'both' ? '-both' : '-wcag');
+			$filename = "color-contrast-report-advanced{$method_suffix}-{$timestamp}.html";
+			
+			header('Content-Type: text/html');
+			header('Content-Disposition: attachment; filename="' . $filename . '"');
+			
+			// Generate report with both modes
+			ob_start();
+			include 'report_template_advanced.php';
+			echo ob_get_clean();
+			exit;
+		} elseif (!empty($_POST['colors'])) {
+			$colors = $_POST['colors'];
+			$report = generateColorReport($colors, $contrast_method);
+			
+			$timestamp = date('Ymd-His');
+			$method_suffix = $contrast_method === 'apca' ? '-apca' : ($contrast_method === 'both' ? '-both' : '-wcag');
+			$filename = "color-contrast-report{$method_suffix}-{$timestamp}.html";
+			
+			header('Content-Type: text/html');
+			header('Content-Disposition: attachment; filename="' . $filename . '"');
+			
+			echo $report;
+			exit;
+		}
+	} elseif ($advanced_mode && (!empty($_POST['light_text']) || !empty($_POST['light_primary']) || !empty($_POST['light_bg']) || !empty($_POST['dark_text']) || !empty($_POST['dark_primary']) || !empty($_POST['dark_bg']))) {
+		// Advanced mode processing
+		$advanced_result = processAdvancedModeColors(
+			$_POST['light_text'] ?? '',
+			$_POST['light_primary'] ?? '',
+			$_POST['light_bg'] ?? '',
+			$_POST['dark_text'] ?? '',
+			$_POST['dark_primary'] ?? '',
+			$_POST['dark_bg'] ?? ''
+		);
+		$light_mode_bg_colors = $advanced_result['light_mode']['background_colors'];
+		$light_mode_fg_colors = $advanced_result['light_mode']['foreground_colors'];
+		$dark_mode_bg_colors = $advanced_result['dark_mode']['background_colors'];
+		$dark_mode_fg_colors = $advanced_result['dark_mode']['foreground_colors'];
+		$light_mode_invalid = $advanced_result['light_mode']['invalid_colors'];
+		$dark_mode_invalid = $advanced_result['dark_mode']['invalid_colors'];
+		$light_mode_excess = $advanced_result['light_mode']['excess_colors'];
+		$dark_mode_excess = $advanced_result['dark_mode']['excess_colors'];
+		$light_mode_duplicates = $advanced_result['light_mode']['duplicate_colors'];
+		$dark_mode_duplicates = $advanced_result['dark_mode']['duplicate_colors'];
+		$light_mode_semantic_duplicates = $advanced_result['light_mode']['semantic_duplicates'];
+		$dark_mode_semantic_duplicates = $advanced_result['dark_mode']['semantic_duplicates'];
 	} elseif (!empty($_POST['colors'])) {
+		// Normal mode processing
 		$result = processColorForm($_POST['colors']);
 		$parsed_colors = $result['parsed_colors'];
 		$excess_colors = $result['excess_colors'];
 		$invalid_colors = $result['invalid_colors'];
 		$duplicate_colors = $result['duplicate_colors'];
 		$semantic_duplicates = $result['semantic_duplicates'];
-		$contrast_method = $_POST['contrast_method'] ?? 'wcag';
 	}
 }
 ?>
@@ -54,12 +121,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </head>
 <body>
 	<nav aria-label="Main">
-	<input type="checkbox" id="toggle" class="menu-toggle">
-	<label for="toggle" class="menu-label">Menu</label>
-	<ul class="topnav controlled">
-		<li><a class="active" href="https://contrast.jefftml.com/">Home</a></li>
-		<li><a href="https://contrast.jefftml.com/help.html">Help</a></li>
-	</ul>
+		<input type="checkbox" id="toggle" class="menu-toggle">
+		<label for="toggle" class="menu-label">Menu</label>
+		<ul class="topnav controlled">
+			<li><a class="active" href="https://contrast.jefftml.com/">Home</a></li>
+			<li><a href="https://contrast.jefftml.com/help.html">Help</a></li>
+		</ul>
 	</nav>
 	<main>
 	<div class="content">
@@ -67,8 +134,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 	<form method="post">
 		<p>Analyze color contrast between multiple colors, up to <?php echo MAX_COLORS; ?> colors total, in tons of formats. Hex, RGB and RGBA, HSL and HSLA, CSS Named Colors, HSB, HWB, Lab, LCH, Oklab, Oklch, and CMYK are fully supported. CSS syntax is also accepted <code>color: #FFF</code> or <code>background-color: rgb(255, 0, 0);</code>. <a href="https://contrast.jefftml.com/help.html#color-formats">More details and specifications</a> are included in the help documentation.</p>
 		<p><code>from</code>, <code>calc()</code>, and <code>color()</code> are not supported. Labels can be added to a color by placing the label before a colon, like <code>link: #2C5491</code></p>
-		<label for="colors">Input your colors:<br><textarea name="colors" id="colors" required autocapitalize="off" autocomplete="off" spellcheck="false" placeholder="Enter colors here, 
+		
+		<div style="margin: 1em 0;">
+			<label style="display: block; margin: 0.5em 0;">
+				<input type="checkbox" name="advanced_mode" id="advanced_mode" value="1" <?= (isset($_POST['advanced_mode']) && $_POST['advanced_mode'] === '1') ? 'checked' : '' ?> onchange="toggleAdvancedMode()"> Enable Advanced Mode (Light/Dark Mode)
+			</label>
+		</div>
+		
+		<div id="normal_mode_input" style="<?= (isset($_POST['advanced_mode']) && $_POST['advanced_mode'] === '1') ? 'display: none;' : '' ?>">
+			<label for="colors">Input your colors:<br><textarea name="colors" id="colors" <?= (!isset($_POST['advanced_mode']) || $_POST['advanced_mode'] !== '1') ? 'required' : '' ?> autocapitalize="off" autocomplete="off" spellcheck="false" placeholder="Enter colors here, 
 one color per line"><?= isset($_POST['colors']) ? htmlspecialchars($_POST['colors']) : '' ?></textarea></label>
+		</div>
+		
+		<div id="advanced_mode_inputs" style="<?= (isset($_POST['advanced_mode']) && $_POST['advanced_mode'] === '1') ? '' : 'display: none;' ?>">
+			<fieldset style="margin: 1em 0; border: 1px solid hsla(0, 0%, 50%, 0.3); padding: 1em;">
+				<legend style="padding: 0 0.5em;">Light Mode Colors</legend>
+				<label for="light_text" style="display: block; margin: 0.5em 0;">
+					Text Colors (one per line):<br><textarea name="light_text" id="light_text" autocapitalize="off" autocomplete="off" spellcheck="false" placeholder="e.g., #000000&#10;#1A1A1A" style="width: 100%; min-height: 60px;"><?= isset($_POST['light_text']) ? htmlspecialchars($_POST['light_text']) : '' ?></textarea>
+				</label>
+				<label for="light_primary" style="display: block; margin: 0.5em 0;">
+					Primary Colors (buttons/links, one per line):<br><textarea name="light_primary" id="light_primary" autocapitalize="off" autocomplete="off" spellcheck="false" placeholder="e.g., #0066CC&#10;#0055AA" style="width: 100%; min-height: 60px;"><?= isset($_POST['light_primary']) ? htmlspecialchars($_POST['light_primary']) : '' ?></textarea>
+				</label>
+				<label for="light_bg" style="display: block; margin: 0.5em 0;">
+					Background Colors (one per line):<br><textarea name="light_bg" id="light_bg" autocapitalize="off" autocomplete="off" spellcheck="false" placeholder="e.g., #FFFFFF&#10;#F5F5F5" style="width: 100%; min-height: 60px;"><?= isset($_POST['light_bg']) ? htmlspecialchars($_POST['light_bg']) : '' ?></textarea>
+				</label>
+			</fieldset>
+			
+			<fieldset style="margin: 1em 0; border: 1px solid hsla(0, 0%, 50%, 0.3); padding: 1em;">
+				<legend style="padding: 0 0.5em;">Dark Mode Colors</legend>
+				<label for="dark_text" style="display: block; margin: 0.5em 0;">
+					Text Colors (one per line):<br><textarea name="dark_text" id="dark_text" autocapitalize="off" autocomplete="off" spellcheck="false" placeholder="e.g., #FFFFFF&#10;#F5F5F5" style="width: 100%; min-height: 60px;"><?= isset($_POST['dark_text']) ? htmlspecialchars($_POST['dark_text']) : '' ?></textarea>
+				</label>
+				<label for="dark_primary" style="display: block; margin: 0.5em 0;">
+					Primary Colors (buttons/links, one per line):<br><textarea name="dark_primary" id="dark_primary" autocapitalize="off" autocomplete="off" spellcheck="false" placeholder="e.g., #66B3FF&#10;#5599DD" style="width: 100%; min-height: 60px;"><?= isset($_POST['dark_primary']) ? htmlspecialchars($_POST['dark_primary']) : '' ?></textarea>
+				</label>
+				<label for="dark_bg" style="display: block; margin: 0.5em 0;">
+					Background Colors (one per line):<br><textarea name="dark_bg" id="dark_bg" autocapitalize="off" autocomplete="off" spellcheck="false" placeholder="e.g., #000000&#10;#1A1A1A" style="width: 100%; min-height: 60px;"><?= isset($_POST['dark_bg']) ? htmlspecialchars($_POST['dark_bg']) : '' ?></textarea>
+				</label>
+			</fieldset>
+		</div>
 		
 		<div style="margin: 1em 0;">
 			<fieldset style="margin: 0; border: 1px solid hsla(0, 0%, 50%, 0.3); padding: 1em; max-width: 400px;">
@@ -86,9 +190,23 @@ one color per line"><?= isset($_POST['colors']) ? htmlspecialchars($_POST['color
 		</div>
 		<button type="submit">Calculate Contrast</button>
 	</form>
+	<div id="results"></div>
 <?php if (!empty($parsed_colors)): ?>
 	<div style="margin-top: 1em;"><form method="post">
 		<input type="hidden" name="colors" value="<?= htmlspecialchars($_POST['colors']) ?>">
+		<input type="hidden" name="contrast_method" value="<?= htmlspecialchars($contrast_method ?? 'wcag') ?>">
+		<button type="submit" name="download" value="1">Download Report</button>
+	</form></div>
+<?php endif;
+if ($advanced_mode && (!empty($light_mode_bg_colors) || !empty($dark_mode_bg_colors))): ?>
+	<div style="margin-top: 1em;"><form method="post">
+		<input type="hidden" name="advanced_mode" value="1">
+		<input type="hidden" name="light_text" value="<?= htmlspecialchars($_POST['light_text'] ?? '') ?>">
+		<input type="hidden" name="light_primary" value="<?= htmlspecialchars($_POST['light_primary'] ?? '') ?>">
+		<input type="hidden" name="light_bg" value="<?= htmlspecialchars($_POST['light_bg'] ?? '') ?>">
+		<input type="hidden" name="dark_text" value="<?= htmlspecialchars($_POST['dark_text'] ?? '') ?>">
+		<input type="hidden" name="dark_primary" value="<?= htmlspecialchars($_POST['dark_primary'] ?? '') ?>">
+		<input type="hidden" name="dark_bg" value="<?= htmlspecialchars($_POST['dark_bg'] ?? '') ?>">
 		<input type="hidden" name="contrast_method" value="<?= htmlspecialchars($contrast_method ?? 'wcag') ?>">
 		<button type="submit" name="download" value="1">Download Report</button>
 	</form></div>
@@ -143,7 +261,100 @@ if (!empty($semantic_duplicates)): ?>
 	</div>
 	<br>
 <?php endif;
-if (!empty($parsed_colors)): 
+// Advanced mode error/warning messages
+if ($advanced_mode && (!empty($light_mode_bg_colors) || !empty($dark_mode_bg_colors))): 
+	if ($light_mode_excess || $dark_mode_excess): ?>
+		<div class="error-message">
+			<h3>Too Many Colors</h3>
+			<p>Only the first <?php echo MAX_COLORS; ?> colors were processed in some modes. Please reduce the number of colors in your input.</p>
+		</div>
+		<br>
+	<?php endif;
+	if (!empty($light_mode_invalid) || !empty($dark_mode_invalid)): ?>
+		<div class="error-message">
+			<h3>Invalid Colors</h3>
+			<?php if (!empty($light_mode_invalid)): ?>
+				<p>Light mode - The following colors could not be parsed:</p>
+				<ul class="error-list">
+					<?php foreach ($light_mode_invalid as $color): ?>
+					<li><code><?= htmlspecialchars($color) ?></code></li>
+					<?php endforeach; ?>
+				</ul>
+			<?php endif;
+			if (!empty($dark_mode_invalid)): ?>
+				<p>Dark mode - The following colors could not be parsed:</p>
+				<ul class="error-list">
+					<?php foreach ($dark_mode_invalid as $color): ?>
+					<li><code><?= htmlspecialchars($color) ?></code></li>
+					<?php endforeach; ?>
+				</ul>
+			<?php endif; ?>
+		</div>
+		<br>
+	<?php endif;
+	if (!empty($light_mode_duplicates) || !empty($dark_mode_duplicates)): ?>
+		<div class="warning-message">
+			<h3>Duplicate Colors</h3>
+			<p>The following colors were entered more than once. Only the first occurrence was processed.</p>
+			<?php if (!empty($light_mode_duplicates)): ?>
+				<p>Light mode:</p>
+				<ul class="error-list">
+					<?php foreach ($light_mode_duplicates as $color): ?>
+					<li><code><?= htmlspecialchars($color) ?></code></li>
+					<?php endforeach; ?>
+				</ul>
+			<?php endif;
+			if (!empty($dark_mode_duplicates)): ?>
+				<p>Dark mode:</p>
+				<ul class="error-list">
+					<?php foreach ($dark_mode_duplicates as $color): ?>
+					<li><code><?= htmlspecialchars($color) ?></code></li>
+					<?php endforeach; ?>
+				</ul>
+			<?php endif; ?>
+		</div>
+		<br>
+	<?php endif;
+	if (!empty($light_mode_semantic_duplicates) || !empty($dark_mode_semantic_duplicates)): ?>
+		<div class="warning-message">
+			<h3>Equivalent Colors</h3>
+			<p>The following colors represent the same values in different formats. Only the first occurrence was processed.</p>
+			<?php if (!empty($light_mode_semantic_duplicates)): ?>
+				<p>Light mode:</p>
+				<ul class="warning-list">
+					<?php foreach ($light_mode_semantic_duplicates as $group): ?>
+						<li>
+							Original: <code><?= htmlspecialchars($group['original']) ?></code>
+							<br>
+							Equivalent formats:
+								<?= implode(', ', array_map(function($duplicate) {
+									return '<code>' . htmlspecialchars($duplicate) . '</code>';
+								}, $group['duplicates'])) ?>
+						</li>
+					<?php endforeach; ?>
+				</ul>
+			<?php endif;
+			if (!empty($dark_mode_semantic_duplicates)): ?>
+				<p>Dark mode:</p>
+				<ul class="warning-list">
+					<?php foreach ($dark_mode_semantic_duplicates as $group): ?>
+						<li>
+							Original: <code><?= htmlspecialchars($group['original']) ?></code>
+							<br>
+							Equivalent formats:
+								<?= implode(', ', array_map(function($duplicate) {
+									return '<code>' . htmlspecialchars($duplicate) . '</code>';
+								}, $group['duplicates'])) ?>
+						</li>
+					<?php endforeach; ?>
+				</ul>
+			<?php endif; ?>
+		</div>
+		<br>
+	<?php endif;
+endif;
+// Normal mode results
+if (!$advanced_mode && !empty($parsed_colors)): 
 	// log a usage for our stats.txt
 	date_default_timezone_set('America/Chicago');
 	$datetime = date('Y-m-d h:i:s A');
@@ -421,6 +632,534 @@ if (!empty($parsed_colors)):
 	<?php endforeach; ?>
 	</table>
 	</div>
+<?php endif; 
+// Advanced mode results - Light Mode
+if ($advanced_mode && !empty($light_mode_bg_colors)): 
+	$current_method = $contrast_method ?? 'wcag';
+	$bg_colors = $light_mode_bg_colors;
+	$fg_colors = $light_mode_fg_colors;
+	?>
+	<h2 style="margin-top: 2em;">Light Mode Results</h2>
+	<div class="table-wrapper">
+		<h2>Summary of Compatible Color Combinations (<?= $current_method === 'both' ? 'Both' : strtoupper($current_method) ?>)</h2>
+		<table class="checkered">
+			<thead>
+				<tr>
+					<th>Background</th>
+					<?php if ($current_method === 'wcag'): ?>
+						<th>AAA ≥ 7.0<br>Best</th>
+						<th>AA Normal ≥ 4.5<br>Second Best</th>
+						<th>AA Large ≥ 3.0<br>Third Best</th>
+					<?php elseif ($current_method === 'apca'): ?>
+						<th>Perfect ≥ 90</th>
+						<th>Excellent ≥ 75</th>
+						<th>Good ≥ 60</th>
+						<th>Fair ≥ 45</th>
+					<?php else: // both ?>
+						<th>Perfect<br>WCAG&nbsp;≥10&nbsp;&<br>APCA&nbsp;≥90</th>
+						<th>Excellent<br>WCAG&nbsp;≥7&nbsp;&<br>APCA&nbsp;≥75</th>
+						<th>Good<br>WCAG&nbsp;≥4.5&nbsp;&<br>APCA&nbsp;≥60</th>
+						<th>Fair<br>WCAG&nbsp;≥3&nbsp;&<br>APCA&nbsp;≥45</th>
+					<?php endif; ?>
+				</tr>
+			</thead>
+			<tbody>
+				<?php foreach ($bg_colors as $bg_color => $bg): 
+					// Calculate all combinations for this background color
+					$combinations = [];
+					foreach ($fg_colors as $fg_color => $fg) {
+						
+						if ($current_method === 'wcag') {
+							// Calculate luminance with alpha blending
+							$fg_lum = getLuminance($fg['rgb'], $fg['alpha'], $bg['rgb']);
+							$bg_lum = $bg['luminance'];
+							$contrast = getContrastRatio($bg_lum, $fg_lum);
+							$level = getWCAGLevel($contrast);
+							
+							if ($level !== 'Fail') {
+								$combinations[] = [
+									'color' => $fg_color,
+									'contrast' => $contrast,
+									'level' => $level
+								];
+							}
+						} elseif ($current_method === 'apca') {
+							// APCA calculations
+							$contrast = getAPCAContrast($bg['rgb'], $fg['rgb'], $bg['alpha'], $fg['alpha']);
+							$level = getAPCALevel($contrast);
+							
+							if (!str_contains($level, 'Fail')) {
+								$combinations[] = [
+									'color' => $fg_color,
+									'contrast' => $contrast,
+									'level' => $level
+								];
+							}
+						} else { // both
+							// Calculate both WCAG and APCA
+							$fg_lum = getLuminance($fg['rgb'], $fg['alpha'], $bg['rgb']);
+							$bg_lum = $bg['luminance'];
+							$wcag_contrast = getContrastRatio($bg_lum, $fg_lum);
+							$wcag_level = getWCAGLevel($wcag_contrast);
+							
+							$apca_contrast = getAPCAContrast($bg['rgb'], $fg['rgb'], $bg['alpha'], $fg['alpha']);
+							$apca_level = getAPCALevel($apca_contrast);
+							
+							$combined_level = getCombinedLevel($wcag_contrast, $apca_contrast);
+							
+							if ($combined_level !== 'Fail') {
+								$combinations[] = [
+									'color' => $fg_color,
+									'wcag_contrast' => $wcag_contrast,
+									'apca_contrast' => $apca_contrast,
+									'level' => $combined_level
+								];
+							}
+						}
+					}
+
+					if ($current_method === 'wcag') {
+						// Group by WCAG level
+						$wcag_groups = [
+							'AAA' => [],
+							'AA' => [],
+							'AA Large' => []
+						];
+						
+						foreach ($combinations as $combo) {
+							$wcag_groups[$combo['level']][] = $combo;
+						}
+						
+						// Sort each group by contrast ratio
+						foreach ($wcag_groups as &$group) {
+							usort($group, function($a, $b) {
+								return $b['contrast'] <=> $a['contrast'];
+							});
+						}
+
+						$has_valid_combinations = !empty($wcag_groups['AAA']) || 
+												!empty($wcag_groups['AA']) || 
+												!empty($wcag_groups['AA Large']);
+					} elseif ($current_method === 'apca') {
+						// Group by APCA level
+						$apca_groups = [
+							'Perfect' => [],
+							'Excellent' => [],
+							'Good' => [],
+							'Fair' => []
+						];
+						
+						foreach ($combinations as $combo) {
+							$level_key = explode(' - ', $combo['level'])[0];
+							if (isset($apca_groups[$level_key])) {
+								$apca_groups[$level_key][] = $combo;
+							}
+						}
+						
+						// Sort each group by absolute contrast value
+						foreach ($apca_groups as &$group) {
+							usort($group, function($a, $b) {
+								return abs($b['contrast']) <=> abs($a['contrast']);
+							});
+						}
+
+						$has_valid_combinations = !empty($apca_groups['Perfect']) || 
+												!empty($apca_groups['Excellent']) || 
+												!empty($apca_groups['Good']) || 
+												!empty($apca_groups['Fair']);
+					} else { // both
+						// Group by combined level
+						$combined_groups = [
+							'Perfect' => [],
+							'Excellent' => [],
+							'Good' => [],
+							'Fair' => []
+						];
+						
+						foreach ($combinations as $combo) {
+							if (isset($combined_groups[$combo['level']])) {
+								$combined_groups[$combo['level']][] = $combo;
+							}
+						}
+						
+						// Sort each group by WCAG contrast ratio
+						foreach ($combined_groups as &$group) {
+							usort($group, function($a, $b) {
+								return $b['wcag_contrast'] <=> $a['wcag_contrast'];
+							});
+						}
+
+						$has_valid_combinations = !empty($combined_groups['Perfect']) || 
+												!empty($combined_groups['Excellent']) || 
+												!empty($combined_groups['Good']) || 
+												!empty($combined_groups['Fair']);
+					}
+				?>
+				<tr style="background-color: <?= htmlspecialchars(getCssColor($bg_color)) ?>;">
+					<td>
+						<?php 
+						// Use alpha-aware luminance for text color calculation
+						$bg_text_lum = getLuminance($bg['rgb'], $bg['alpha']); ?>
+						<span style="color: <?= $bg_text_lum > 0.5 ? '#000000' : '#FFFFFF' ?>"><?= htmlspecialchars(getCleanColorName($bg_color)) ?></span>
+					</td>
+					<?php if ($has_valid_combinations): ?>
+						<?php if ($current_method === 'wcag'): ?>
+							<?php foreach (['AAA', 'AA', 'AA Large'] as $level): ?>
+								<td><?php foreach ($wcag_groups[$level] as $combo): ?>
+									<div style="color: <?= htmlspecialchars(getCssColor($combo['color'])) ?>;"><?= htmlspecialchars($combo['color']) ?>&nbsp;(Ratio:&nbsp;<?= number_format($combo['contrast'], 2) ?>)</div>
+								<?php endforeach; ?></td>
+							<?php endforeach; ?>
+						<?php elseif ($current_method === 'apca'): ?>
+							<?php foreach (['Perfect', 'Excellent', 'Good', 'Fair'] as $level): ?>
+								<td><?php foreach ($apca_groups[$level] as $combo): ?>
+									<div style="color: <?= htmlspecialchars(getCssColor($combo['color'])) ?>;"><?= htmlspecialchars($combo['color']) ?>&nbsp;(Lc:&nbsp;<?= number_format($combo['contrast'], 1) ?>)</div>
+								<?php endforeach; ?></td>
+							<?php endforeach; ?>
+						<?php else: // both ?>
+							<?php foreach (['Perfect', 'Excellent', 'Good', 'Fair'] as $level): ?>
+								<td><?php foreach ($combined_groups[$level] as $combo): ?>
+									<div style="color: <?= htmlspecialchars(getCssColor($combo['color'])) ?>;"><?= htmlspecialchars($combo['color']) ?>&nbsp;(<?= number_format($combo['wcag_contrast'], 2) ?>)&nbsp;(Lc&nbsp;<?= number_format($combo['apca_contrast'], 1) ?>)</div>
+								<?php endforeach; ?></td>
+							<?php endforeach; ?>
+						<?php endif; ?>
+					<?php else: ?>
+						<td colspan="<?= $current_method === 'wcag' ? '3' : '4' ?>" style="text-align: center; color: <?= $bg_text_lum > 0.5 ? '#000000' : '#FFFFFF' ?>">
+							<?php if ($current_method === 'wcag'): ?>
+								No valid color combinations found (all contrast ratios below 3.0)
+							<?php elseif ($current_method === 'apca'): ?>
+								No valid color combinations found (all APCA values below 45)
+							<?php else: ?>
+								No valid color combinations found (failed both WCAG and APCA thresholds)
+							<?php endif; ?>
+						</td>
+					<?php endif; ?>
+				</tr>
+				<?php endforeach; ?>
+			</tbody>
+		</table>
+	</div>
+
+	<div class="table-wrapper">
+	<h2>Complete Contrast Grid - Light Mode (<?= $current_method === 'both' ? 'Both' : strtoupper($current_method) ?>)</h2>
+	<table class="checkered">
+	<tr>
+		<th>BG \ FG</th>
+	<?php foreach ($fg_colors as $color => $data): ?>
+		<th><?= htmlspecialchars(getCleanColorName($color)) ?></th>
+	<?php endforeach; ?>
+	</tr>
+	<?php foreach ($bg_colors as $bg_color => $bg_data): ?>
+	<tr>
+		<th><?= htmlspecialchars(getCleanColorName($bg_color)) ?></th>
+		<?php foreach ($fg_colors as $fg_color => $fg_data): 
+			if ($current_method === 'wcag') {
+				// Calculate luminance with alpha blending
+				$fg_lum = getLuminance($fg_data['rgb'], $fg_data['alpha'], $bg_data['rgb']);
+				$bg_lum = $bg_data['luminance'];
+				$contrast = getContrastRatio($bg_lum, $fg_lum);
+				$level = getWCAGLevel($contrast);
+				$display_value = number_format($contrast, 2);
+			} elseif ($current_method === 'apca') {
+				// APCA calculations
+				$contrast = getAPCAContrast($bg_data['rgb'], $fg_data['rgb'], $bg_data['alpha'], $fg_data['alpha']);
+				$level = getAPCALevel($contrast);
+				$display_value = number_format($contrast, 1);
+			} else { // both
+				// Calculate both WCAG and APCA
+				$fg_lum = getLuminance($fg_data['rgb'], $fg_data['alpha'], $bg_data['rgb']);
+				$bg_lum = $bg_data['luminance'];
+				$wcag_contrast = getContrastRatio($bg_lum, $fg_lum);
+				$wcag_level = getWCAGLevel($wcag_contrast);
+				
+				$apca_contrast = getAPCAContrast($bg_data['rgb'], $fg_data['rgb'], $bg_data['alpha'], $fg_data['alpha']);
+				$apca_level = getAPCALevel($apca_contrast);
+				
+				$combined_level = getCombinedLevel($wcag_contrast, $apca_contrast);
+			}
+		?>
+			<td style="background-color: <?= htmlspecialchars(getCssColor($bg_color)) ?>;">
+				<!-- color value hover / alt text? -->
+				<div class="sample-text" style="color: <?= htmlspecialchars(getCssColor($fg_color)) ?>;">Sample
+				<div style="font-size: 0.8em;">
+					<?php if ($current_method === 'wcag'): ?>
+						<?= $display_value ?><br><?= $level ?>
+					<?php elseif ($current_method === 'apca'): ?>
+						Lc&nbsp;<?= $display_value ?><br><?= explode(' - ', $level)[0] ?>
+					<?php else: // both ?>
+						(<?= number_format($wcag_contrast, 2) ?>) (Lc&nbsp;<?= number_format($apca_contrast, 1) ?>)<br><?= $combined_level ?>
+					<?php endif; ?>
+				</div>
+				</div>
+			</td>
+	<?php endforeach; ?>
+	</tr>
+	<?php endforeach; ?>
+	</table>
+	</div>
+<?php endif; 
+// Advanced mode results - Dark Mode
+if ($advanced_mode && !empty($dark_mode_bg_colors)): 
+	$current_method = $contrast_method ?? 'wcag';
+	$bg_colors = $dark_mode_bg_colors;
+	$fg_colors = $dark_mode_fg_colors;
+	?>
+	<h2 style="margin-top: 2em;">Dark Mode Results</h2>
+	<div class="table-wrapper">
+		<h2>Summary of Compatible Color Combinations (<?= $current_method === 'both' ? 'Both' : strtoupper($current_method) ?>)</h2>
+		<table class="checkered">
+			<thead>
+				<tr>
+					<th>Background</th>
+					<?php if ($current_method === 'wcag'): ?>
+						<th>AAA ≥ 7.0<br>Best</th>
+						<th>AA Normal ≥ 4.5<br>Second Best</th>
+						<th>AA Large ≥ 3.0<br>Third Best</th>
+					<?php elseif ($current_method === 'apca'): ?>
+						<th>Perfect ≥ 90</th>
+						<th>Excellent ≥ 75</th>
+						<th>Good ≥ 60</th>
+						<th>Fair ≥ 45</th>
+					<?php else: // both ?>
+						<th>Perfect<br>WCAG&nbsp;≥10&nbsp;&<br>APCA&nbsp;≥90</th>
+						<th>Excellent<br>WCAG&nbsp;≥7&nbsp;&<br>APCA&nbsp;≥75</th>
+						<th>Good<br>WCAG&nbsp;≥4.5&nbsp;&<br>APCA&nbsp;≥60</th>
+						<th>Fair<br>WCAG&nbsp;≥3&nbsp;&<br>APCA&nbsp;≥45</th>
+					<?php endif; ?>
+				</tr>
+			</thead>
+			<tbody>
+				<?php foreach ($bg_colors as $bg_color => $bg): 
+					// Calculate all combinations for this background color
+					$combinations = [];
+					foreach ($fg_colors as $fg_color => $fg) {
+						
+						if ($current_method === 'wcag') {
+							// Calculate luminance with alpha blending
+							$fg_lum = getLuminance($fg['rgb'], $fg['alpha'], $bg['rgb']);
+							$bg_lum = $bg['luminance'];
+							$contrast = getContrastRatio($bg_lum, $fg_lum);
+							$level = getWCAGLevel($contrast);
+							
+							if ($level !== 'Fail') {
+								$combinations[] = [
+									'color' => $fg_color,
+									'contrast' => $contrast,
+									'level' => $level
+								];
+							}
+						} elseif ($current_method === 'apca') {
+							// APCA calculations
+							$contrast = getAPCAContrast($bg['rgb'], $fg['rgb'], $bg['alpha'], $fg['alpha']);
+							$level = getAPCALevel($contrast);
+							
+							if (!str_contains($level, 'Fail')) {
+								$combinations[] = [
+									'color' => $fg_color,
+									'contrast' => $contrast,
+									'level' => $level
+								];
+							}
+						} else { // both
+							// Calculate both WCAG and APCA
+							$fg_lum = getLuminance($fg['rgb'], $fg['alpha'], $bg['rgb']);
+							$bg_lum = $bg['luminance'];
+							$wcag_contrast = getContrastRatio($bg_lum, $fg_lum);
+							$wcag_level = getWCAGLevel($wcag_contrast);
+							
+							$apca_contrast = getAPCAContrast($bg['rgb'], $fg['rgb'], $bg['alpha'], $fg['alpha']);
+							$apca_level = getAPCALevel($apca_contrast);
+							
+							$combined_level = getCombinedLevel($wcag_contrast, $apca_contrast);
+							
+							if ($combined_level !== 'Fail') {
+								$combinations[] = [
+									'color' => $fg_color,
+									'wcag_contrast' => $wcag_contrast,
+									'apca_contrast' => $apca_contrast,
+									'level' => $combined_level
+								];
+							}
+						}
+					}
+
+					if ($current_method === 'wcag') {
+						// Group by WCAG level
+						$wcag_groups = [
+							'AAA' => [],
+							'AA' => [],
+							'AA Large' => []
+						];
+						
+						foreach ($combinations as $combo) {
+							$wcag_groups[$combo['level']][] = $combo;
+						}
+						
+						// Sort each group by contrast ratio
+						foreach ($wcag_groups as &$group) {
+							usort($group, function($a, $b) {
+								return $b['contrast'] <=> $a['contrast'];
+							});
+						}
+
+						$has_valid_combinations = !empty($wcag_groups['AAA']) || 
+												!empty($wcag_groups['AA']) || 
+												!empty($wcag_groups['AA Large']);
+					} elseif ($current_method === 'apca') {
+						// Group by APCA level
+						$apca_groups = [
+							'Perfect' => [],
+							'Excellent' => [],
+							'Good' => [],
+							'Fair' => []
+						];
+						
+						foreach ($combinations as $combo) {
+							$level_key = explode(' - ', $combo['level'])[0];
+							if (isset($apca_groups[$level_key])) {
+								$apca_groups[$level_key][] = $combo;
+							}
+						}
+						
+						// Sort each group by absolute contrast value
+						foreach ($apca_groups as &$group) {
+							usort($group, function($a, $b) {
+								return abs($b['contrast']) <=> abs($a['contrast']);
+							});
+						}
+
+						$has_valid_combinations = !empty($apca_groups['Perfect']) || 
+												!empty($apca_groups['Excellent']) || 
+												!empty($apca_groups['Good']) || 
+												!empty($apca_groups['Fair']);
+					} else { // both
+						// Group by combined level
+						$combined_groups = [
+							'Perfect' => [],
+							'Excellent' => [],
+							'Good' => [],
+							'Fair' => []
+						];
+						
+						foreach ($combinations as $combo) {
+							if (isset($combined_groups[$combo['level']])) {
+								$combined_groups[$combo['level']][] = $combo;
+							}
+						}
+						
+						// Sort each group by WCAG contrast ratio
+						foreach ($combined_groups as &$group) {
+							usort($group, function($a, $b) {
+								return $b['wcag_contrast'] <=> $a['wcag_contrast'];
+							});
+						}
+
+						$has_valid_combinations = !empty($combined_groups['Perfect']) || 
+												!empty($combined_groups['Excellent']) || 
+												!empty($combined_groups['Good']) || 
+												!empty($combined_groups['Fair']);
+					}
+				?>
+				<tr style="background-color: <?= htmlspecialchars(getCssColor($bg_color)) ?>;">
+					<td>
+						<?php 
+						// Use alpha-aware luminance for text color calculation
+						$bg_text_lum = getLuminance($bg['rgb'], $bg['alpha']); ?>
+						<span style="color: <?= $bg_text_lum > 0.5 ? '#000000' : '#FFFFFF' ?>"><?= htmlspecialchars(getCleanColorName($bg_color)) ?></span>
+					</td>
+					<?php if ($has_valid_combinations): ?>
+						<?php if ($current_method === 'wcag'): ?>
+							<?php foreach (['AAA', 'AA', 'AA Large'] as $level): ?>
+								<td><?php foreach ($wcag_groups[$level] as $combo): ?>
+									<div style="color: <?= htmlspecialchars(getCssColor($combo['color'])) ?>;"><?= htmlspecialchars($combo['color']) ?>&nbsp;(Ratio:&nbsp;<?= number_format($combo['contrast'], 2) ?>)</div>
+								<?php endforeach; ?></td>
+							<?php endforeach; ?>
+						<?php elseif ($current_method === 'apca'): ?>
+							<?php foreach (['Perfect', 'Excellent', 'Good', 'Fair'] as $level): ?>
+								<td><?php foreach ($apca_groups[$level] as $combo): ?>
+									<div style="color: <?= htmlspecialchars(getCssColor($combo['color'])) ?>;"><?= htmlspecialchars($combo['color']) ?>&nbsp;(Lc:&nbsp;<?= number_format($combo['contrast'], 1) ?>)</div>
+								<?php endforeach; ?></td>
+							<?php endforeach; ?>
+						<?php else: // both ?>
+							<?php foreach (['Perfect', 'Excellent', 'Good', 'Fair'] as $level): ?>
+								<td><?php foreach ($combined_groups[$level] as $combo): ?>
+									<div style="color: <?= htmlspecialchars(getCssColor($combo['color'])) ?>;"><?= htmlspecialchars($combo['color']) ?>&nbsp;(<?= number_format($combo['wcag_contrast'], 2) ?>)&nbsp;(Lc&nbsp;<?= number_format($combo['apca_contrast'], 1) ?>)</div>
+								<?php endforeach; ?></td>
+							<?php endforeach; ?>
+						<?php endif; ?>
+					<?php else: ?>
+						<td colspan="<?= $current_method === 'wcag' ? '3' : '4' ?>" style="text-align: center; color: <?= $bg_text_lum > 0.5 ? '#000000' : '#FFFFFF' ?>">
+							<?php if ($current_method === 'wcag'): ?>
+								No valid color combinations found (all contrast ratios below 3.0)
+							<?php elseif ($current_method === 'apca'): ?>
+								No valid color combinations found (all APCA values below 45)
+							<?php else: ?>
+								No valid color combinations found (failed both WCAG and APCA thresholds)
+							<?php endif; ?>
+						</td>
+					<?php endif; ?>
+				</tr>
+				<?php endforeach; ?>
+			</tbody>
+		</table>
+	</div>
+
+	<div class="table-wrapper">
+	<h2>Complete Contrast Grid - Dark Mode (<?= $current_method === 'both' ? 'Both' : strtoupper($current_method) ?>)</h2>
+	<table class="checkered">
+	<tr>
+		<th>BG \ FG</th>
+	<?php foreach ($fg_colors as $color => $data): ?>
+		<th><?= htmlspecialchars(getCleanColorName($color)) ?></th>
+	<?php endforeach; ?>
+	</tr>
+	<?php foreach ($bg_colors as $bg_color => $bg_data): ?>
+	<tr>
+		<th><?= htmlspecialchars(getCleanColorName($bg_color)) ?></th>
+		<?php foreach ($fg_colors as $fg_color => $fg_data): 
+			if ($current_method === 'wcag') {
+				// Calculate luminance with alpha blending
+				$fg_lum = getLuminance($fg_data['rgb'], $fg_data['alpha'], $bg_data['rgb']);
+				$bg_lum = $bg_data['luminance'];
+				$contrast = getContrastRatio($bg_lum, $fg_lum);
+				$level = getWCAGLevel($contrast);
+				$display_value = number_format($contrast, 2);
+			} elseif ($current_method === 'apca') {
+				// APCA calculations
+				$contrast = getAPCAContrast($bg_data['rgb'], $fg_data['rgb'], $bg_data['alpha'], $fg_data['alpha']);
+				$level = getAPCALevel($contrast);
+				$display_value = number_format($contrast, 1);
+			} else { // both
+				// Calculate both WCAG and APCA
+				$fg_lum = getLuminance($fg_data['rgb'], $fg_data['alpha'], $bg_data['rgb']);
+				$bg_lum = $bg_data['luminance'];
+				$wcag_contrast = getContrastRatio($bg_lum, $fg_lum);
+				$wcag_level = getWCAGLevel($wcag_contrast);
+				
+				$apca_contrast = getAPCAContrast($bg_data['rgb'], $fg_data['rgb'], $bg_data['alpha'], $fg_data['alpha']);
+				$apca_level = getAPCALevel($apca_contrast);
+				
+				$combined_level = getCombinedLevel($wcag_contrast, $apca_contrast);
+			}
+		?>
+			<td style="background-color: <?= htmlspecialchars(getCssColor($bg_color)) ?>;">
+				<!-- color value hover / alt text? -->
+				<div class="sample-text" style="color: <?= htmlspecialchars(getCssColor($fg_color)) ?>;">Sample
+				<div style="font-size: 0.8em;">
+					<?php if ($current_method === 'wcag'): ?>
+						<?= $display_value ?><br><?= $level ?>
+					<?php elseif ($current_method === 'apca'): ?>
+						Lc&nbsp;<?= $display_value ?><br><?= explode(' - ', $level)[0] ?>
+					<?php else: // both ?>
+						(<?= number_format($wcag_contrast, 2) ?>) (Lc&nbsp;<?= number_format($apca_contrast, 1) ?>)<br><?= $combined_level ?>
+					<?php endif; ?>
+				</div>
+				</div>
+			</td>
+	<?php endforeach; ?>
+	</tr>
+	<?php endforeach; ?>
+	</table>
+	</div>
 <?php endif; ?>
 	<div class="timer"><?php 
 	$end = hrtime(true);
@@ -460,6 +1199,58 @@ if (!empty($parsed_colors)):
 	<div class="footer"><?php echo getCopyrightYears(2024); ?>
 	</div>
 	<script src="https://contrast.jefftml.com/tablewidth.js"></script>
+	<script>
+	function toggleAdvancedMode() {
+		var advancedMode = document.getElementById('advanced_mode').checked;
+		var normalModeInput = document.getElementById('normal_mode_input');
+		var advancedModeInputs = document.getElementById('advanced_mode_inputs');
+		var colorsTextarea = document.getElementById('colors');
+		
+		if (advancedMode) {
+			normalModeInput.style.display = 'none';
+			advancedModeInputs.style.display = 'block';
+			if (colorsTextarea) {
+				colorsTextarea.removeAttribute('required');
+			}
+		} else {
+			normalModeInput.style.display = 'block';
+			advancedModeInputs.style.display = 'none';
+			if (colorsTextarea) {
+				colorsTextarea.setAttribute('required', 'required');
+			}
+		}
+	}
+	
+	// Initialize on page load
+	if (document.readyState === 'loading') {
+		document.addEventListener('DOMContentLoaded', toggleAdvancedMode);
+	} else {
+		toggleAdvancedMode();
+	}
+	
+	// Scroll to results if they exist (after form submission)
+	function scrollToResults() {
+		var resultsAnchor = document.getElementById('results');
+		if (resultsAnchor) {
+			// Check if there are any results or error messages
+			var hasResults = document.querySelector('.error-message, .warning-message, .table-wrapper') !== null;
+			
+			if (hasResults) {
+				// Small delay to ensure page is fully rendered
+				setTimeout(function() {
+					resultsAnchor.scrollIntoView({ behavior: 'smooth', block: 'start' });
+				}, 100);
+			}
+		}
+	}
+	
+	// Run scroll check on page load
+	if (document.readyState === 'loading') {
+		document.addEventListener('DOMContentLoaded', scrollToResults);
+	} else {
+		scrollToResults();
+	}
+	</script>
 	</div>
 	</main>
 </body>

@@ -5,7 +5,7 @@ require_once 'parse_colors.php';
 
 define('MAX_COLORS', 50);
 
-function processColorForm($colors) {
+function processColorForm($colors, $skip_black_white = false) {
 	$parsed_colors = [];
 	$invalid_colors = [];
 	$duplicate_colors = [];
@@ -94,7 +94,8 @@ function processColorForm($colors) {
 	}
 	
 	// Add black and white for single color case, excluding duplicates
-	if (count($parsed_colors) === 1) {
+	// Skip this in advanced mode to avoid adding black and white for dark/light mode background colors
+	if (!$skip_black_white && count($parsed_colors) === 1) {
 		if (!$has_black) {
 			$parsed_colors['black'] = [
 				'rgb' => [0, 0, 0],
@@ -118,6 +119,88 @@ function processColorForm($colors) {
 		'semantic_duplicates' => $semantic_duplicates,
 		'excess_colors' => $excess_colors,
 		'original_input' => $unique_colors
+	];
+}
+
+function processAdvancedModeColors($light_text, $light_primary, $light_bg, $dark_text, $dark_primary, $dark_bg) {
+	// Helper function to parse multiple colors from textarea input
+	$parseColorField = function($input) {
+		if (empty(trim($input))) {
+			return ['colors' => [], 'invalid' => []];
+		}
+		$colors = [];
+		$invalid = [];
+		$lines = preg_split('/\r\n|\r|\n/', trim($input));
+		foreach ($lines as $line) {
+			$line = trim($line);
+			if (empty($line)) continue;
+			$rgb = parseColor($line);
+			if ($rgb !== false) {
+				$colors[] = $line;
+			} else {
+				$invalid[] = $line;
+			}
+		}
+		return ['colors' => $colors, 'invalid' => $invalid];
+	};
+	
+	// Collect light mode background colors
+	$light_bg_result = $parseColorField($light_bg);
+	$light_bg_colors = $light_bg_result['colors'];
+	$light_bg_invalid = $light_bg_result['invalid'];
+	
+	// Collect light mode foreground colors (text + primary + always include black and white)
+	$light_text_result = $parseColorField($light_text);
+	$light_primary_result = $parseColorField($light_primary);
+	$light_fg_colors = array_merge($light_text_result['colors'], $light_primary_result['colors'], ['#FFFFFF', '#000000']);
+	$light_fg_invalid = array_merge($light_text_result['invalid'], $light_primary_result['invalid']);
+
+	// Add primary colors to background colors (primary colors function as both foreground and background)
+	$light_bg_colors = array_merge($light_bg_colors, $light_primary_result['colors']);
+	
+	// Collect dark mode background colors
+	$dark_bg_result = $parseColorField($dark_bg);
+	$dark_bg_colors = $dark_bg_result['colors'];
+	$dark_bg_invalid = $dark_bg_result['invalid'];
+	
+	// Collect dark mode foreground colors (text + primary + always include black and white)
+	$dark_text_result = $parseColorField($dark_text);
+	$dark_primary_result = $parseColorField($dark_primary);
+	$dark_fg_colors = array_merge($dark_text_result['colors'], $dark_primary_result['colors'], ['#FFFFFF', '#000000']);
+	$dark_fg_invalid = array_merge($dark_text_result['invalid'], $dark_primary_result['invalid']);
+
+	// Add primary colors to background colors (primary colors function as both foreground and background)
+	$dark_bg_colors = array_merge($dark_bg_colors, $dark_primary_result['colors']);
+	
+	// Process light mode background colors
+	$light_bg_result = processColorForm(implode("\n", $light_bg_colors), true);
+	
+	// Process light mode foreground colors
+	$light_fg_result = processColorForm(implode("\n", $light_fg_colors), true);
+	
+	// Process dark mode background colors
+	$dark_bg_result = processColorForm(implode("\n", $dark_bg_colors), true);
+	
+	// Process dark mode foreground colors
+	$dark_fg_result = processColorForm(implode("\n", $dark_fg_colors), true);
+	
+	return [
+		'light_mode' => [
+			'background_colors' => $light_bg_result['parsed_colors'],
+			'foreground_colors' => $light_fg_result['parsed_colors'],
+			'invalid_colors' => array_merge($light_bg_result['invalid_colors'], $light_fg_result['invalid_colors'], $light_bg_invalid, $light_fg_invalid),
+			'duplicate_colors' => array_merge($light_bg_result['duplicate_colors'], $light_fg_result['duplicate_colors']),
+			'semantic_duplicates' => array_merge($light_bg_result['semantic_duplicates'], $light_fg_result['semantic_duplicates']),
+			'excess_colors' => $light_bg_result['excess_colors'] || $light_fg_result['excess_colors']
+		],
+		'dark_mode' => [
+			'background_colors' => $dark_bg_result['parsed_colors'],
+			'foreground_colors' => $dark_fg_result['parsed_colors'],
+			'invalid_colors' => array_merge($dark_bg_result['invalid_colors'], $dark_fg_result['invalid_colors'], $dark_bg_invalid, $dark_fg_invalid),
+			'duplicate_colors' => array_merge($dark_bg_result['duplicate_colors'], $dark_fg_result['duplicate_colors']),
+			'semantic_duplicates' => array_merge($dark_bg_result['semantic_duplicates'], $dark_fg_result['semantic_duplicates']),
+			'excess_colors' => $dark_bg_result['excess_colors'] || $dark_fg_result['excess_colors']
+		]
 	];
 }
 ?>
